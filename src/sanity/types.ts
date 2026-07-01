@@ -1,0 +1,40 @@
+export type SanityImage = {
+  _type?: "image";
+  asset?: { _ref?: string; _type?: string; url?: string };
+  hotspot?: { x: number; y: number; height: number; width: number };
+  crop?: { top: number; bottom: number; left: number; right: number };
+};
+
+export type HomeHeroDoc = {
+  eyebrow?: string;
+  headline?: string;
+  sub?: string;
+  primaryCta?: { label?: string; href?: string };
+  secondaryCta?: { label?: string; href?: string };
+};
+
+export type LifestylePhotoDoc = {
+  _id: string;
+  location: string;
+  caption?: string;
+  aspect: string;
+  image: SanityImage;
+};
+
+export type PortfolioProjectDoc = {
+  _id: string;
+  title: string;
+  meta?: string;
+  category?: string;
+  tone: string;
+  image?: SanityImage;
+};
+
+export type TestimonialDoc = {
+  _id: string;
+  quote: string;
+  name: string;
+  role?: string;
+  initials?: string;
+  rating?: number;
+};

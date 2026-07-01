@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { X, Minus, Plus, ShoppingBag, ArrowRight } from "lucide-react";
 import { useCart, cartTotal, cartCount } from "@/lib/cart-store";
+import { trackEvent } from "@/components/analytics/posthog-provider";
 import { cn } from "@/lib/cn";
 
 export function CartDrawer() {
@@ -22,6 +23,10 @@ export function CartDrawer() {
   }, [open]);
 
   async function onCheckout() {
+    trackEvent("checkout_started", {
+      item_count: cartCount(items),
+      subtotal: cartTotal(items),
+    });
     const res = await fetch("/api/checkout", {
       method: "POST",
       headers: { "Content-Type": "application/json" },

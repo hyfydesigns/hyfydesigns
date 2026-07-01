@@ -1,3 +1,4 @@
+import Image from "next/image";
 import type { Metadata } from "next";
 import { UploadCloud, MessageCircle, Truck } from "lucide-react";
 import { NavBar } from "@/components/layout/nav-bar";
@@ -5,6 +6,10 @@ import { Footer } from "@/components/layout/footer";
 import { Container } from "@/components/ui/container";
 import { Eyebrow } from "@/components/ui/badge";
 import { QuoteForm } from "@/components/custom/quote-form";
+import { sanityFetch } from "@/sanity/client";
+import { PORTFOLIO_QUERY } from "@/sanity/queries";
+import { urlFor } from "@/sanity/image";
+import type { PortfolioProjectDoc } from "@/sanity/types";
 
 export const metadata: Metadata = {
   title: "Custom orders",
@@ -30,7 +35,7 @@ const steps = [
   },
 ];
 
-const portfolio = [
+const fallbackPortfolio: Omit<PortfolioProjectDoc, "_id" | "image">[] = [
   { title: "Blacksmith Coffee tees", meta: "80 shirts · Heights, TX", tone: "bg-red-tint text-red-deep" },
   { title: "TX Marathon merch", meta: "500 pieces · Downtown", tone: "bg-blue text-cream" },
   { title: "Wedding welcome mugs", meta: "60 mugs · East End", tone: "bg-blue-tint text-blue" },
@@ -39,7 +44,17 @@ const portfolio = [
   { title: "Studio anniversary poster", meta: "Screen print · Montrose", tone: "bg-red text-cream" },
 ];
 
-export default function CustomOrdersPage() {
+export default async function CustomOrdersPage() {
+  const portfolio = await sanityFetch<PortfolioProjectDoc[]>(
+    PORTFOLIO_QUERY,
+    {},
+    [],
+  );
+  const projects =
+    portfolio.length > 0
+      ? portfolio
+      : fallbackPortfolio.map((p, i) => ({ ...p, _id: `fallback-${i}`, image: undefined }));
+
   return (
     <>
       <NavBar />
@@ -113,13 +128,25 @@ export default function CustomOrdersPage() {
               </p>
             </div>
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-              {portfolio.map((p) => (
+              {projects.map((p) => (
                 <div
-                  key={p.title}
-                  className={`aspect-[4/5] rounded-xl p-5 sm:p-6 flex flex-col justify-end ${p.tone}`}
+                  key={p._id}
+                  className={`relative aspect-[4/5] rounded-xl p-5 sm:p-6 flex flex-col justify-end overflow-hidden ${p.image ? "text-cream" : p.tone}`}
                 >
-                  <p className="text-xs opacity-80">{p.meta}</p>
-                  <p className="text-sm sm:text-base font-medium mt-1">
+                  {p.image && (
+                    <>
+                      <Image
+                        src={urlFor(p.image).url()}
+                        alt={p.title}
+                        fill
+                        sizes="(min-width: 1024px) 33vw, 50vw"
+                        className="object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-navy/80 via-navy/20 to-transparent" />
+                    </>
+                  )}
+                  <p className="relative text-xs opacity-80">{p.meta}</p>
+                  <p className="relative text-sm sm:text-base font-medium mt-1">
                     {p.title}
                   </p>
                 </div>

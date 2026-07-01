@@ -22,15 +22,51 @@ export type PrintfulProduct = {
   priceDisplay: string;
 };
 
+// Printful /store/products (list) response shape
+type PfStoreProductSummary = {
+  id: number;
+  external_id: string;
+  name: string;
+  variants: number;
+  synced: number;
+  thumbnail_url: string;
+};
+
+// Printful /store/products/{id} (single) response shape
+type PfStoreProductDetail = {
+  sync_product: {
+    id: number;
+    external_id: string;
+    name: string;
+    thumbnail_url: string;
+  };
+  sync_variants: Array<{
+    id: number;
+    external_id: string;
+    variant_id: number;
+    retail_price: string;
+    name: string;
+    product: {
+      variant_id: number;
+      product_id: number;
+      image: string;
+      name: string;
+    };
+    files: Array<{ id: number; type: string; preview_url?: string }>;
+  }>;
+};
+
 const PRINTFUL_BASE = "https://api.printful.com";
 const apiKey = process.env.PRINTFUL_API_KEY;
 
-async function pf<T>(path: string): Promise<T | null> {
+async function pf<T>(path: string, init?: RequestInit): Promise<T | null> {
   if (!apiKey) return null;
   const res = await fetch(`${PRINTFUL_BASE}${path}`, {
+    ...init,
     headers: {
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
+      ...(init?.headers ?? {}),
     },
     next: { revalidate: 300 },
   });
@@ -40,17 +76,40 @@ async function pf<T>(path: string): Promise<T | null> {
 }
 
 export async function getProducts(): Promise<PrintfulProduct[]> {
-  const live = await pf<unknown[]>("/store/products");
-  if (live) {
-    // Map Printful store response → PrintfulProduct here once live catalog exists.
-    return mockProducts;
-  }
-  return mockProducts;
+  const summaries = await pf<PfStoreProductSummary[]>("/store/products");
+  if (!summaries) return mockProducts;
+
+  const details = await Promise.all(
+    summaries.map((s) => pf<PfStoreProductDetail>(`/store/products/${s.id}`)),
+  );
+
+  return details
+    .filter((d): d is PfStoreProductDetail => d !== null)
+    .map((d, i) => mapDetail(d, summaries[i]));
 }
 
 export async function getProduct(slug: string): Promise<PrintfulProduct | null> {
   const all = await getProducts();
   return all.find((p) => p.slug === slug) ?? null;
+}
+
+export async function generateMockup(payload: {
+  variantIds: number[];
+  imageUrl: string;
+}) {
+  if (!apiKey) return { status: "mocked", mockups: [] };
+  const res = await pf<{ task_key: string }>(
+    "/mockup-generator/create-task/71",
+    {
+      method: "POST",
+      body: JSON.stringify({
+        variant_ids: payload.variantIds,
+        format: "jpg",
+        files: [{ placement: "front", image_url: payload.imageUrl }],
+      }),
+    },
+  );
+  return { status: "pending", taskKey: res?.task_key };
 }
 
 export async function createOrder(payload: {
@@ -85,7 +144,7 @@ export async function createOrder(payload: {
         email: payload.email,
       },
       items: payload.items.map((i) => ({
-        variant_id: i.variantId,
+        sync_variant_id: Number(i.variantId),
         quantity: i.quantity,
       })),
     }),
@@ -93,6 +152,69 @@ export async function createOrder(payload: {
   if (!res.ok) throw new Error(`Printful order failed: ${res.status}`);
   const data = (await res.json()) as { result: { id: number } };
   return { ok: true, mocked: false, orderId: String(data.result.id) };
+}
+
+function mapDetail(
+  d: PfStoreProductDetail,
+  summary: PfStoreProductSummary,
+): PrintfulProduct {
+  const name = d.sync_product.name;
+  const slug =
+    d.sync_product.external_id ||
+    name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  const colors = Array.from(
+    new Set(d.sync_variants.map((v) => extractColor(v.name))),
+  ).filter(Boolean);
+  const type = detectType(name);
+  const category = categoryFor(type);
+  const priceNum = Number(d.sync_variants[0]?.retail_price ?? "0");
+  const priceDisplay = `$${priceNum.toFixed(0)}`;
+
+  return {
+    slug,
+    name,
+    type,
+    category,
+    colors,
+    description: "",
+    variants: d.sync_variants.map((v) => ({
+      id: String(v.id),
+      color: extractColor(v.name),
+      size: extractSize(v.name),
+      price: Number(v.retail_price),
+      mockupUrl: v.product.image,
+    })),
+    images: [summary.thumbnail_url],
+    meta: `${colors.length} colors`,
+    priceDisplay,
+  };
+}
+
+function extractColor(variantName: string): string {
+  const parts = variantName.split(" / ");
+  return parts.length > 1 ? parts[parts.length - 2] : "One color";
+}
+
+function extractSize(variantName: string): string {
+  const parts = variantName.split(" / ");
+  return parts[parts.length - 1] ?? "One size";
+}
+
+function detectType(name: string): PrintfulProduct["type"] {
+  const n = name.toLowerCase();
+  if (n.includes("hoodie") || n.includes("sweatshirt")) return "hoodie";
+  if (n.includes("mug")) return "mug";
+  if (n.includes("sticker")) return "sticker";
+  if (n.includes("hat") || n.includes("cap") || n.includes("beanie")) return "hat";
+  if (n.includes("engrav") || n.includes("plaque")) return "engraving";
+  return "t-shirt";
+}
+
+function categoryFor(type: PrintfulProduct["type"]): PrintfulProduct["category"] {
+  if (type === "mug") return "drinkware";
+  if (type === "sticker" || type === "hat") return "accessories";
+  if (type === "engraving") return "custom";
+  return "apparel";
 }
 
 export function toCardProduct(p: PrintfulProduct): Product {
@@ -114,13 +236,16 @@ export function toCardProduct(p: PrintfulProduct): Product {
           : p.type === "hat"
             ? "HardHat"
             : "Wrench";
+  const hasImage = p.images[0] && p.images[0].startsWith("http");
   return {
     slug: p.slug,
     name: p.name,
     meta: p.meta,
     price: p.priceDisplay,
     badge: p.badge,
-    visual: { kind: "icon", src: iconName, bg },
+    visual: hasImage
+      ? { kind: "image", src: p.images[0], bg }
+      : { kind: "icon", src: iconName, bg },
     isQuote: p.category === "custom",
   };
 }

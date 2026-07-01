@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { UploadCloud, Check, FileText, X } from "lucide-react";
+import { trackEvent } from "@/components/analytics/posthog-provider";
 import { cn } from "@/lib/cn";
 
 const projectTypes = [
@@ -37,6 +38,11 @@ export function QuoteForm() {
     files.forEach((f) => form.append("files", f));
     try {
       await fetch("/api/quote", { method: "POST", body: form });
+      trackEvent("quote_submitted", {
+        type: form.get("type"),
+        quantity: form.get("quantity"),
+        file_count: files.length,
+      });
       setStatus("done");
     } catch {
       setStatus("idle");

@@ -2,8 +2,39 @@ import { MapPin, ArrowRight, Truck, Star } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { ButtonLink } from "@/components/ui/button";
 import { Eyebrow } from "@/components/ui/badge";
+import { sanityFetch } from "@/sanity/client";
+import { HOME_HERO_QUERY } from "@/sanity/queries";
+import type { HomeHeroDoc } from "@/sanity/types";
 
-export function Hero() {
+type CtaCopy = { label: string; href: string };
+
+const defaults: {
+  eyebrow: string;
+  sub: string;
+  primaryCta: CtaCopy;
+  secondaryCta: CtaCopy;
+} = {
+  eyebrow: "Printed in Houston since 2004",
+  sub: "Bold shirts, mugs, stickers, and print-on-demand pieces built for creatives, teams, and Houston originals.",
+  primaryCta: { label: "Browse merch", href: "/shop" },
+  secondaryCta: { label: "Request custom quote", href: "/custom-orders" },
+};
+
+export async function Hero() {
+  const doc = await sanityFetch<HomeHeroDoc | null>(HOME_HERO_QUERY, {}, null);
+
+  const eyebrow = doc?.eyebrow ?? defaults.eyebrow;
+  const sub = doc?.sub ?? defaults.sub;
+  const primaryCta = doc?.primaryCta?.label
+    ? { label: doc.primaryCta.label, href: doc.primaryCta.href ?? "/shop" }
+    : defaults.primaryCta;
+  const secondaryCta = doc?.secondaryCta?.label
+    ? {
+        label: doc.secondaryCta.label,
+        href: doc.secondaryCta.href ?? "/custom-orders",
+      }
+    : defaults.secondaryCta;
+
   return (
     <section className="relative">
       <Container>
@@ -11,33 +42,38 @@ export function Hero() {
           <div className="order-1">
             <Eyebrow>
               <MapPin className="h-3 w-3" strokeWidth={2.5} />
-              Printed in Houston since 2004
+              {eyebrow}
             </Eyebrow>
-            <h1 className="mt-4 text-[34px] sm:text-5xl lg:text-6xl leading-[1.03] font-medium text-navy">
-              Wear the <span className="text-blue">city</span> you love.
-              <br />
-              <span className="relative inline-block">
-                <span className="relative z-10">Custom merch,</span>
-                <span className="absolute left-0 right-0 bottom-1 h-3 sm:h-4 bg-red -z-0" />
-              </span>{" "}
-              made with care.
-            </h1>
+            {doc?.headline ? (
+              <h1 className="mt-4 text-[34px] sm:text-5xl lg:text-6xl leading-[1.03] font-medium text-navy">
+                {doc.headline}
+              </h1>
+            ) : (
+              <h1 className="mt-4 text-[34px] sm:text-5xl lg:text-6xl leading-[1.03] font-medium text-navy">
+                Wear the <span className="text-blue">city</span> you love.
+                <br />
+                <span className="relative inline-block">
+                  <span className="relative z-10">Custom merch,</span>
+                  <span className="absolute left-0 right-0 bottom-1 h-3 sm:h-4 bg-red -z-0" />
+                </span>{" "}
+                made with care.
+              </h1>
+            )}
             <p className="mt-4 sm:mt-6 text-[15px] sm:text-base text-ink-600 max-w-lg leading-relaxed">
-              Bold shirts, mugs, stickers, and print-on-demand pieces built for
-              creatives, teams, and Houston originals.
+              {sub}
             </p>
             <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row gap-3">
-              <ButtonLink href="/shop" size="lg" className="w-full sm:w-auto">
-                Browse merch
+              <ButtonLink href={primaryCta.href} size="lg" className="w-full sm:w-auto">
+                {primaryCta.label}
                 <ArrowRight className="h-4 w-4" strokeWidth={2} />
               </ButtonLink>
               <ButtonLink
-                href="/custom-orders"
+                href={secondaryCta.href}
                 variant="secondary"
                 size="lg"
                 className="w-full sm:w-auto"
               >
-                Request custom quote
+                {secondaryCta.label}
               </ButtonLink>
             </div>
             <div className="mt-6 sm:mt-8 flex flex-wrap gap-x-5 gap-y-2 text-xs text-ink-400">

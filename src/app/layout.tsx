@@ -1,6 +1,10 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { Space_Grotesk, Inter, Fraunces, JetBrains_Mono } from "next/font/google";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { CartDrawer } from "@/components/cart/cart-drawer";
+import { PostHogProvider } from "@/components/analytics/posthog-provider";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -60,8 +64,12 @@ export default function RootLayout({
       className={`${spaceGrotesk.variable} ${inter.variable} ${fraunces.variable} ${jetbrainsMono.variable} h-full`}
     >
       <body className="min-h-full flex flex-col">
-        {children}
+        <Suspense fallback={null}>
+          <PostHogProvider>{children}</PostHogProvider>
+        </Suspense>
         <CartDrawer />
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
