@@ -43,6 +43,7 @@ export function ProductBuyBox({
       size: activeVariant.size,
       price: activeVariant.price,
       quantity: 1,
+      image: activeVariant.mockupUrl ?? product.images[0],
     });
     trackEvent("add_to_cart", {
       slug: product.slug,

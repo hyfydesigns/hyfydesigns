@@ -97,7 +97,16 @@ export function CartDrawer() {
                   key={item.variantId}
                   className="flex gap-3 pb-4 border-b border-hairline last:border-b-0"
                 >
-                  <div className="h-16 w-16 rounded-lg bg-blue-tint flex-shrink-0" />
+                  <div className="h-16 w-16 rounded-lg bg-blue-tint flex-shrink-0 overflow-hidden relative">
+                    {item.image && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        className="absolute inset-0 h-full w-full object-contain"
+                      />
+                    )}
+                  </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-navy truncate">
                       {item.name}
