@@ -65,13 +65,22 @@ export default async function ProductPage({
     .slice(0, 4);
 
   const descriptionBlocks = content?.description as PortableTextBlock[] | undefined;
-  const cleanHtml = content?.htmlDescription
-    ? sanitizeHtml(content.htmlDescription, {
+  // Prefer the explicit HTML field. If empty, check whether the Portable Text
+  // content is actually raw HTML that got pasted in (very common with content
+  // copied from Printful). If it looks like HTML, promote it.
+  const rawHtmlSource =
+    content?.htmlDescription ??
+    (descriptionBlocks ? htmlIfPortableTextContainsTags(descriptionBlocks) : "");
+  const cleanHtml = rawHtmlSource
+    ? sanitizeHtml(rawHtmlSource, {
         allowedTags: ALLOWED_HTML_TAGS,
         allowedAttributes: { a: ["href", "target", "rel"] },
         allowedSchemes: ["http", "https", "mailto"],
       })
     : "";
+  // If we promoted Portable Text to HTML, don't ALSO render Portable Text.
+  const shouldRenderPortableText =
+    !cleanHtml && descriptionBlocks && descriptionBlocks.length > 0;
   const jsonLdDescription =
     plainTextFromHtml(cleanHtml) ||
     plainTextFromBlocks(descriptionBlocks) ||
@@ -121,7 +130,7 @@ export default async function ProductPage({
                     className="product-html leading-relaxed"
                     dangerouslySetInnerHTML={{ __html: cleanHtml }}
                   />
-                ) : descriptionBlocks && descriptionBlocks.length > 0 ? (
+                ) : shouldRenderPortableText ? (
                   <PortableText
                     value={descriptionBlocks}
                     components={{
@@ -251,4 +260,24 @@ function plainTextFromHtml(html: string): string {
     .replace(/\s+/g, " ")
     .trim()
     .slice(0, 300);
+}
+
+// If a Portable Text array is really just HTML that got pasted in, return the
+// concatenated raw HTML string. Otherwise return empty so we render as normal
+// Portable Text. Recognizes common tags (p, br, strong, em, ul, ol, li, h3,
+// h4, blockquote) — one match is enough to consider it HTML.
+const HTML_TAG_RE = /<\/?(?:p|br|strong|b|em|i|u|ul|ol|li|h[1-6]|blockquote|a|hr|span)(\s[^>]*)?>/i;
+function htmlIfPortableTextContainsTags(blocks: unknown[]): string {
+  const combined = blocks
+    .map((b) => {
+      const block = b as {
+        _type?: string;
+        children?: Array<{ text?: string }>;
+      };
+      if (block._type !== "block" || !Array.isArray(block.children)) return "";
+      return block.children.map((c) => c.text ?? "").join("");
+    })
+    .filter(Boolean)
+    .join("\n\n");
+  return HTML_TAG_RE.test(combined) ? combined : "";
 }
