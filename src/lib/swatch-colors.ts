@@ -4,14 +4,16 @@
 const map: Record<string, string> = {
   // Neutrals
   black: "#0A0A0A",
+  blackheather: "#1F1F1F",
+  heatherblack: "#1F1F1F",
   white: "#FFFFFF",
   natural: "#F4EBD9",
   cream: "#FDFBF5",
   ivory: "#F5F0E1",
   sand: "#D9C9B0",
   vintagewhite: "#F2ECDE",
-  ash: "#D6D6D2",
-  ashgrey: "#D6D6D2",
+  ash: "#C5C5BF",
+  ashgrey: "#C5C5BF",
   athleticheather: "#B8B8B0",
   sportgrey: "#A6A6A0",
   heathergrey: "#9E9E96",
@@ -33,6 +35,10 @@ const map: Record<string, string> = {
   blue: "#1E4FD9",
   royal: "#264ACC",
   royalblue: "#264ACC",
+  trueroyal: "#1F42A0",
+  sapphire: "#1863A6",
+  sky: "#71B9E3",
+  skyblue: "#71B9E3",
   lightblue: "#8FB4F5",
   babyblue: "#B7D3F5",
   carolinablue: "#7CB0E0",
@@ -59,6 +65,7 @@ const map: Record<string, string> = {
   lightpink: "#FBD1DC",
   hotpink: "#E5457D",
   fuchsia: "#D42F7D",
+  azalea: "#EE7BA6",
   coral: "#FF7A5C",
   salmon: "#F0846E",
 
@@ -95,6 +102,7 @@ const map: Record<string, string> = {
   // Browns
   brown: "#5A3D28",
   chocolate: "#3D2A1A",
+  darkchocolate: "#2B1810",
   tan: "#B58A5A",
   khaki: "#B0A17D",
 
