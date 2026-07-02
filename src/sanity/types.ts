@@ -38,3 +38,17 @@ export type TestimonialDoc = {
   initials?: string;
   rating?: number;
 };
+
+export type CollectionSummary = {
+  _id: string;
+  title: string;
+  slug: string;
+};
+
+export type CollectionDoc = {
+  _id: string;
+  title: string;
+  slug: string;
+  description?: string;
+  productSlugs?: string[];
+};

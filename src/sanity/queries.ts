@@ -25,3 +25,19 @@ export const TESTIMONIALS_QUERY = groq`
     _id, quote, name, role, initials, rating
   }
 `;
+
+export const FEATURED_COLLECTIONS_QUERY = groq`
+  *[_type == "collection" && featured == true] | order(order asc, title asc){
+    _id, title, "slug": slug.current
+  }
+`;
+
+export const COLLECTION_QUERY = groq`
+  *[_type == "collection" && slug.current == $slug][0]{
+    _id, title, description, "slug": slug.current, productSlugs
+  }
+`;
+
+export const ALL_COLLECTION_SLUGS_QUERY = groq`
+  *[_type == "collection" && defined(slug.current)]{ "slug": slug.current }
+`;
