@@ -14,8 +14,16 @@ export const productContent = defineType({
       components: { input: ProductPickerSingle },
     }),
     defineField({
+      name: "htmlDescription",
+      title: "Description (HTML paste-friendly)",
+      type: "text",
+      rows: 12,
+      description:
+        "Paste description HTML directly (e.g. from Printful). Supports <p>, <br>, <b>/<strong>, <i>/<em>, <ul>/<ol>/<li>, <a>. Everything else is stripped for safety. Prefer this field if you're copying formatted content.",
+    }),
+    defineField({
       name: "description",
-      title: "Description",
+      title: "Description (rich text editor)",
       type: "array",
       of: [
         {
@@ -45,7 +53,7 @@ export const productContent = defineType({
         },
       ],
       description:
-        "Rich description shown on the product page. Supports bullets, links, and formatting.",
+        "Only used if the HTML field above is empty. Structured editor with bullets, links, formatting.",
     }),
     defineField({
       name: "sizingNote",

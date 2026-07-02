@@ -92,3 +92,41 @@ button, [role="button"], a {
 @utility font-voice {
   font-family: var(--font-voice);
 }
+
+.product-html p { margin-bottom: 0.75rem; }
+.product-html p:last-child { margin-bottom: 0; }
+.product-html ul { list-style: disc; padding-left: 1.25rem; margin-bottom: 0.75rem; }
+.product-html ol { list-style: decimal; padding-left: 1.25rem; margin-bottom: 0.75rem; }
+.product-html li { margin-bottom: 0.25rem; }
+.product-html a { color: var(--color-navy); text-decoration: underline; }
+.product-html a:hover { color: var(--color-blue); }
+.product-html strong, .product-html b { font-weight: 500; color: var(--color-navy); }
+.product-html h3, .product-html h4 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  color: var(--color-navy);
+  font-size: 1rem;
+  margin-top: 1rem;
+  margin-bottom: 0.25rem;
+}
+.product-html h3:first-child, .product-html h4:first-child { margin-top: 0; }
+.product-html blockquote {
+  border-left: 2px solid var(--color-red);
+  padding-left: 0.75rem;
+  color: var(--color-navy);
+  margin: 0.75rem 0;
+  font-style: italic;
+}
+.product-html hr { border-color: var(--color-hairline); margin: 1rem 0; }
+
+.scroll-pane {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(10, 42, 110, 0.25) transparent;
+  mask-image: linear-gradient(to bottom, black calc(100% - 16px), transparent);
+  -webkit-mask-image: linear-gradient(to bottom, black calc(100% - 16px), transparent);
+}
+.scroll-pane::-webkit-scrollbar { width: 6px; }
+.scroll-pane::-webkit-scrollbar-thumb {
+  background: rgba(10, 42, 110, 0.25);
+  border-radius: 3px;
+}

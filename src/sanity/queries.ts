@@ -44,6 +44,6 @@ export const ALL_COLLECTION_SLUGS_QUERY = groq`
 
 export const PRODUCT_CONTENT_QUERY = groq`
   *[_type == "productContent" && slug == $slug][0]{
-    slug, description, sizingNote, careNote
+    slug, htmlDescription, description, sizingNote, careNote
   }
 `;

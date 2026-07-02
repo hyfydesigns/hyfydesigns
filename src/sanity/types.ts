@@ -57,6 +57,7 @@ export type CollectionDoc = {
 // types into this shared module; the renderer casts as needed.
 export type ProductContentDoc = {
   slug: string;
+  htmlDescription?: string;
   description?: unknown[];
   sizingNote?: string;
   careNote?: string;

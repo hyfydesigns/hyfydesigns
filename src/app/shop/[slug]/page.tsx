@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
+import sanitizeHtml from "sanitize-html";
 import { ChevronRight } from "lucide-react";
 import { PortableText, type PortableTextBlock } from "@portabletext/react";
 import { NavBar } from "@/components/layout/nav-bar";
@@ -12,6 +13,12 @@ import { getProduct, getProducts, toCardProduct } from "@/lib/printful";
 import { sanityFetch } from "@/sanity/client";
 import { PRODUCT_CONTENT_QUERY } from "@/sanity/queries";
 import type { ProductContentDoc } from "@/sanity/types";
+
+const ALLOWED_HTML_TAGS = [
+  "p", "br", "b", "strong", "i", "em", "u",
+  "ul", "ol", "li", "a", "h3", "h4", "h5",
+  "blockquote", "hr", "span",
+];
 
 export async function generateStaticParams() {
   const products = await getProducts();
@@ -58,8 +65,18 @@ export default async function ProductPage({
     .slice(0, 4);
 
   const descriptionBlocks = content?.description as PortableTextBlock[] | undefined;
+  const cleanHtml = content?.htmlDescription
+    ? sanitizeHtml(content.htmlDescription, {
+        allowedTags: ALLOWED_HTML_TAGS,
+        allowedAttributes: { a: ["href", "target", "rel"] },
+        allowedSchemes: ["http", "https", "mailto"],
+      })
+    : "";
   const jsonLdDescription =
-    plainTextFromBlocks(descriptionBlocks) || product.description || product.name;
+    plainTextFromHtml(cleanHtml) ||
+    plainTextFromBlocks(descriptionBlocks) ||
+    product.description ||
+    product.name;
 
   const jsonLd = {
     "@context": "https://schema.org/",
@@ -98,8 +115,13 @@ export default async function ProductPage({
 
           <section className="py-10 border-t border-hairline">
             <div className="grid gap-8 lg:grid-cols-3">
-              <Detail title="Details">
-                {descriptionBlocks && descriptionBlocks.length > 0 ? (
+              <Detail title="Details" scrollable>
+                {cleanHtml ? (
+                  <div
+                    className="product-html leading-relaxed"
+                    dangerouslySetInnerHTML={{ __html: cleanHtml }}
+                  />
+                ) : descriptionBlocks && descriptionBlocks.length > 0 ? (
                   <PortableText
                     value={descriptionBlocks}
                     components={{
@@ -185,15 +207,25 @@ export default async function ProductPage({
 
 function Detail({
   title,
+  scrollable,
   children,
 }: {
   title: string;
+  scrollable?: boolean;
   children: React.ReactNode;
 }) {
   return (
     <div>
       <h3 className="text-lg mb-2">{title}</h3>
-      <div className="text-sm text-ink-600">{children}</div>
+      <div
+        className={
+          scrollable
+            ? "text-sm text-ink-600 max-h-[24rem] overflow-y-auto pr-2 rounded-lg scroll-pane"
+            : "text-sm text-ink-600"
+        }
+      >
+        {children}
+      </div>
     </div>
   );
 }
@@ -209,6 +241,14 @@ function plainTextFromBlocks(
       return block.children.map((c) => c.text ?? "").join("");
     })
     .join(" ")
+    .trim()
+    .slice(0, 300);
+}
+
+function plainTextFromHtml(html: string): string {
+  return html
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
     .trim()
     .slice(0, 300);
 }
