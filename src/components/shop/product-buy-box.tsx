@@ -1,7 +1,11 @@
 "use client";
 
+import { useState } from "react";
+import Link from "next/link";
 import { ArrowRight, Check } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { useCart } from "@/lib/cart-store";
+import { trackEvent } from "@/components/analytics/posthog-provider";
 import type { PrintfulProduct } from "@/lib/printful";
 import { swatchColor, isLightSwatch } from "@/lib/swatch-colors";
 
@@ -18,8 +22,49 @@ export function ProductBuyBox({
   onColorChange: (c: string) => void;
   onSizeChange: (s: string) => void;
 }) {
+  const addItem = useCart((s) => s.addItem);
+  const [flash, setFlash] = useState<"idle" | "added">("idle");
+
   const sizes = Array.from(new Set(product.variants.map((v) => v.size)));
   const isCustom = product.category === "custom";
+
+  const activeVariant = product.variants.find(
+    (v) => v.color === color && v.size === size,
+  );
+  const canAdd = Boolean(activeVariant);
+
+  function handleAdd() {
+    if (!activeVariant) return;
+    addItem({
+      variantId: activeVariant.id,
+      slug: product.slug,
+      name: product.name,
+      color: activeVariant.color,
+      size: activeVariant.size,
+      price: activeVariant.price,
+      quantity: 1,
+    });
+    trackEvent("add_to_cart", {
+      slug: product.slug,
+      variant_id: activeVariant.id,
+      color: activeVariant.color,
+      size: activeVariant.size,
+      price: activeVariant.price,
+    });
+    setFlash("added");
+    setTimeout(() => setFlash("idle"), 1500);
+  }
+
+  const primaryLabel = isCustom
+    ? "Start a project"
+    : flash === "added"
+      ? "Added"
+      : "Add to bag";
+  const mobileLabel = isCustom
+    ? "Start"
+    : flash === "added"
+      ? "Added"
+      : "Add to bag";
 
   return (
     <div>
@@ -74,42 +119,73 @@ export function ProductBuyBox({
 
       {sizes.length > 0 && (
         <div className="mt-6">
-          <p className="text-xs uppercase tracking-wider text-ink-400 mb-2">
-            Size
-          </p>
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-xs uppercase tracking-wider text-ink-400">
+              Size
+            </p>
+            {size && !isCustom && !canAdd && (
+              <p className="text-xs text-red">
+                Not available in {color}
+              </p>
+            )}
+          </div>
           <div className="grid grid-cols-4 gap-2 max-w-xs">
-            {sizes.map((s) => (
-              <button
-                key={s}
-                onClick={() => onSizeChange(s)}
-                className={cn(
-                  "min-h-11 text-sm font-medium rounded-lg border transition-colors tap",
-                  s === size
-                    ? "bg-navy text-cream border-navy"
-                    : "bg-white text-navy border-hairline hover:border-navy",
-                )}
-              >
-                {s}
-              </button>
-            ))}
+            {sizes.map((s) => {
+              const availableInColor = product.variants.some(
+                (v) => v.color === color && v.size === s,
+              );
+              return (
+                <button
+                  key={s}
+                  onClick={() => onSizeChange(s)}
+                  disabled={color !== "" && !availableInColor}
+                  className={cn(
+                    "min-h-11 text-sm font-medium rounded-lg border transition-colors tap",
+                    s === size
+                      ? "bg-navy text-cream border-navy"
+                      : availableInColor
+                        ? "bg-white text-navy border-hairline hover:border-navy"
+                        : "bg-white/40 text-ink-200 border-hairline line-through cursor-not-allowed",
+                  )}
+                >
+                  {s}
+                </button>
+              );
+            })}
           </div>
         </div>
       )}
 
       <div className="mt-8 hidden sm:flex gap-3">
-        <button
-          type="button"
-          className="flex-1 min-h-12 rounded-lg bg-navy text-cream font-medium text-sm inline-flex items-center justify-center gap-2 hover:bg-navy-deep tap"
-        >
-          {isCustom ? "Start a project" : "Add to bag"}
-          <ArrowRight className="h-4 w-4" strokeWidth={2} />
-        </button>
-        <button
-          type="button"
-          className="min-h-12 px-6 rounded-lg border border-navy text-navy font-medium text-sm hover:bg-navy hover:text-cream tap"
-        >
-          Save
-        </button>
+        {isCustom ? (
+          <Link
+            href="/custom-orders"
+            className="flex-1 min-h-12 rounded-lg bg-navy text-cream font-medium text-sm inline-flex items-center justify-center gap-2 hover:bg-navy-deep tap"
+          >
+            {primaryLabel}
+            <ArrowRight className="h-4 w-4" strokeWidth={2} />
+          </Link>
+        ) : (
+          <button
+            type="button"
+            onClick={handleAdd}
+            disabled={!canAdd}
+            className={cn(
+              "flex-1 min-h-12 rounded-lg font-medium text-sm inline-flex items-center justify-center gap-2 tap transition-colors",
+              canAdd
+                ? "bg-navy text-cream hover:bg-navy-deep"
+                : "bg-ink-200 text-cream cursor-not-allowed",
+              flash === "added" && "bg-blue text-cream",
+            )}
+          >
+            {flash === "added" ? (
+              <Check className="h-4 w-4" strokeWidth={2.5} />
+            ) : (
+              <ArrowRight className="h-4 w-4" strokeWidth={2} />
+            )}
+            {primaryLabel}
+          </button>
+        )}
       </div>
 
       {/* Sticky mobile add-to-bag */}
@@ -120,13 +196,35 @@ export function ProductBuyBox({
           </p>
           <p className="text-sm font-medium text-navy">{product.priceDisplay}</p>
         </div>
-        <button
-          type="button"
-          className="flex-1 min-h-12 rounded-lg bg-navy text-cream text-sm font-medium inline-flex items-center justify-center gap-1.5 tap"
-        >
-          {isCustom ? "Start" : "Add to bag"}
-          <ArrowRight className="h-4 w-4" strokeWidth={2} />
-        </button>
+        {isCustom ? (
+          <Link
+            href="/custom-orders"
+            className="flex-1 min-h-12 rounded-lg bg-navy text-cream text-sm font-medium inline-flex items-center justify-center gap-1.5 tap"
+          >
+            {mobileLabel}
+            <ArrowRight className="h-4 w-4" strokeWidth={2} />
+          </Link>
+        ) : (
+          <button
+            type="button"
+            onClick={handleAdd}
+            disabled={!canAdd}
+            className={cn(
+              "flex-1 min-h-12 rounded-lg text-sm font-medium inline-flex items-center justify-center gap-1.5 tap transition-colors",
+              canAdd
+                ? "bg-navy text-cream"
+                : "bg-ink-200 text-cream cursor-not-allowed",
+              flash === "added" && "bg-blue text-cream",
+            )}
+          >
+            {mobileLabel}
+            {flash === "added" ? (
+              <Check className="h-4 w-4" strokeWidth={2.5} />
+            ) : (
+              <ArrowRight className="h-4 w-4" strokeWidth={2} />
+            )}
+          </button>
+        )}
       </div>
     </div>
   );
