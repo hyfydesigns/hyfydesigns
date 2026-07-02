@@ -38,12 +38,26 @@ export async function generateMetadata({
     { slug },
     null,
   );
-  const description = plainTextFromBlocks(content?.description) || product.description;
+  const description = descriptionForMeta(content, product.description);
   return {
     title: product.name,
     description,
     openGraph: { title: product.name, description },
   };
+}
+
+function descriptionForMeta(
+  content: ProductContentDoc | null,
+  fallback: string,
+): string {
+  if (content?.htmlDescription) return plainTextFromHtml(content.htmlDescription);
+  const blocks = content?.description as unknown[] | undefined;
+  const blockText = plainTextFromBlocks(blocks);
+  // If the Portable Text content contained raw HTML tags, strip them too.
+  if (blockText && /<[a-z][^>]*>/i.test(blockText)) {
+    return plainTextFromHtml(blockText);
+  }
+  return blockText || fallback;
 }
 
 export default async function ProductPage({
