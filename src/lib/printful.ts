@@ -159,9 +159,7 @@ function mapDetail(
   summary: PfStoreProductSummary,
 ): PrintfulProduct {
   const name = d.sync_product.name;
-  const slug =
-    d.sync_product.external_id ||
-    name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  const slug = slugify(name) || d.sync_product.external_id;
   const colors = Array.from(
     new Set(d.sync_variants.map((v) => extractColor(v.name))),
   ).filter(Boolean);
@@ -188,6 +186,17 @@ function mapDetail(
     meta: `${colors.length} colors`,
     priceDisplay,
   };
+}
+
+function slugify(name: string): string {
+  return name
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[‘’']/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80);
 }
 
 function extractColor(variantName: string): string {
