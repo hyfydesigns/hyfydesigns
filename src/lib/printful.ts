@@ -149,7 +149,12 @@ export async function createOrder(payload: {
       })),
     }),
   });
-  if (!res.ok) throw new Error(`Printful order failed: ${res.status}`);
+  if (!res.ok) {
+    const bodyText = await res.text().catch(() => "");
+    throw new Error(
+      `Printful order failed: ${res.status} ${bodyText.slice(0, 400)}`,
+    );
+  }
   const data = (await res.json()) as { result: { id: number } };
   return { ok: true, mocked: false, orderId: String(data.result.id) };
 }
