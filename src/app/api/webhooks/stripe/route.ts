@@ -79,17 +79,34 @@ export async function POST(req: Request) {
         country?: string | null;
       } | null;
     };
-    // Newer Stripe API: shipping lives on collected_information.shipping_details.
-    // Older API (still in some Stripe accounts): shipping_details directly on session.
+    // Prefer address from session metadata (collected on our own /checkout page).
+    // Fall back to Stripe's own shipping_details for legacy sessions.
+    const md = session.metadata ?? {};
+    const metadataShip: ShippingBlob | null = md.ship_address1
+      ? {
+          name: md.ship_name ?? null,
+          address: {
+            line1: md.ship_address1,
+            city: md.ship_city ?? null,
+            state: md.ship_state ?? null,
+            postal_code: md.ship_zip ?? null,
+            country: md.ship_country ?? null,
+          },
+        }
+      : null;
     const sessionLoose = session as Stripe.Checkout.Session & {
       shipping_details?: ShippingBlob | null;
       collected_information?: { shipping_details?: ShippingBlob | null };
     };
     const ship =
+      metadataShip ??
       sessionLoose.collected_information?.shipping_details ??
       sessionLoose.shipping_details ??
       null;
-    const email = session.customer_details?.email ?? session.customer_email;
+    const email =
+      md.customer_email ??
+      session.customer_details?.email ??
+      session.customer_email;
 
     if (!ship?.address || !email) {
       console.warn(

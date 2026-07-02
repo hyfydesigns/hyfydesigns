@@ -93,6 +93,80 @@ export async function getProduct(slug: string): Promise<PrintfulProduct | null> 
   return all.find((p) => p.slug === slug) ?? null;
 }
 
+export type ShippingAddress = {
+  name?: string;
+  address1: string;
+  city: string;
+  state: string;
+  zip: string;
+  country: string;
+};
+
+export type ShippingRate = {
+  id: string;
+  name: string;
+  rate: number;
+  currency: string;
+  minDays: number;
+  maxDays: number;
+};
+
+export async function getShippingRates(payload: {
+  address: ShippingAddress;
+  items: { variantId: string; quantity: number }[];
+}): Promise<ShippingRate[]> {
+  if (!apiKey) {
+    return [
+      { id: "STANDARD", name: "Flat Rate", rate: 4.99, currency: "USD", minDays: 5, maxDays: 8 },
+      { id: "PRINTFUL_FAST", name: "Priority", rate: 12.99, currency: "USD", minDays: 3, maxDays: 5 },
+    ];
+  }
+  const res = await fetch(`${PRINTFUL_BASE}/shipping/rates`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      recipient: {
+        address1: payload.address.address1,
+        city: payload.address.city,
+        state_code: payload.address.state,
+        zip: payload.address.zip,
+        country_code: payload.address.country,
+      },
+      items: payload.items.map((i) => ({
+        sync_variant_id: Number(i.variantId),
+        quantity: i.quantity,
+      })),
+    }),
+  });
+  if (!res.ok) {
+    const bodyText = await res.text().catch(() => "");
+    throw new Error(
+      `Printful shipping rates failed: ${res.status} ${bodyText.slice(0, 400)}`,
+    );
+  }
+  const data = (await res.json()) as {
+    result: Array<{
+      id: string;
+      name: string;
+      rate: string;
+      currency: string;
+      minDeliveryDays?: number;
+      maxDeliveryDays?: number;
+    }>;
+  };
+  return data.result.map((r) => ({
+    id: r.id,
+    name: r.name,
+    rate: Number(r.rate),
+    currency: r.currency,
+    minDays: r.minDeliveryDays ?? 3,
+    maxDays: r.maxDeliveryDays ?? 8,
+  }));
+}
+
 export async function generateMockup(payload: {
   variantIds: number[];
   imageUrl: string;

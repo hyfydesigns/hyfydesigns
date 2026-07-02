@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { X, Minus, Plus, ShoppingBag, ArrowRight } from "lucide-react";
 import { useCart, cartTotal, cartCount } from "@/lib/cart-store";
 import { trackEvent } from "@/components/analytics/posthog-provider";
 import { cn } from "@/lib/cn";
 
 export function CartDrawer() {
+  const router = useRouter();
   const items = useCart((s) => s.items);
   const open = useCart((s) => s.open);
   const setOpen = useCart((s) => s.setOpen);
@@ -22,18 +24,13 @@ export function CartDrawer() {
     };
   }, [open]);
 
-  async function onCheckout() {
-    trackEvent("checkout_started", {
+  function onCheckout() {
+    trackEvent("checkout_opened", {
       item_count: cartCount(items),
       subtotal: cartTotal(items),
     });
-    const res = await fetch("/api/checkout", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ items }),
-    });
-    const { url } = (await res.json()) as { url: string };
-    if (url) window.location.href = url;
+    setOpen(false);
+    router.push("/checkout");
   }
 
   const total = cartTotal(items);
