@@ -1,4 +1,5 @@
 import { defineType, defineField } from "sanity";
+import { ProductPicker } from "../components/product-picker";
 
 export const collection = defineType({
   name: "collection",
@@ -36,11 +37,12 @@ export const collection = defineType({
     }),
     defineField({
       name: "productSlugs",
-      title: "Product slugs",
+      title: "Products",
       type: "array",
       of: [{ type: "string" }],
       description:
-        "Copy each product's slug from its /shop/... URL (e.g. corgi-hiking-club-t-shirt). Order here controls order on the collection page.",
+        "Check the products to include. Use the arrows in the selected list above to reorder.",
+      components: { input: ProductPicker },
     }),
   ],
   preview: {
