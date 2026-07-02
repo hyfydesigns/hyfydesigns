@@ -168,6 +168,30 @@ function mapDetail(
   const priceNum = Number(d.sync_variants[0]?.retail_price ?? "0");
   const priceDisplay = `$${priceNum.toFixed(0)}`;
 
+  const variants = d.sync_variants.map((v) => ({
+    id: String(v.id),
+    color: extractColor(v.name),
+    size: extractSize(v.name),
+    price: Number(v.retail_price),
+    mockupUrl:
+      v.files?.find((f) => f.type === "preview")?.preview_url ??
+      v.product.image,
+  }));
+
+  // Collect unique mockup URLs: main thumbnail first, then one per unique color
+  const seen = new Set<string>();
+  const images: string[] = [];
+  if (summary.thumbnail_url) {
+    images.push(summary.thumbnail_url);
+    seen.add(summary.thumbnail_url);
+  }
+  for (const v of variants) {
+    if (v.mockupUrl && !seen.has(v.mockupUrl)) {
+      images.push(v.mockupUrl);
+      seen.add(v.mockupUrl);
+    }
+  }
+
   return {
     slug,
     name,
@@ -175,15 +199,9 @@ function mapDetail(
     category,
     colors,
     description: "",
-    variants: d.sync_variants.map((v) => ({
-      id: String(v.id),
-      color: extractColor(v.name),
-      size: extractSize(v.name),
-      price: Number(v.retail_price),
-      mockupUrl: v.product.image,
-    })),
-    images: [summary.thumbnail_url],
-    meta: `${colors.length} colors`,
+    variants,
+    images: images.slice(0, 8),
+    meta: `${colors.length} color${colors.length === 1 ? "" : "s"}`,
     priceDisplay,
   };
 }

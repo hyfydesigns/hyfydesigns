@@ -7,6 +7,7 @@ import { Footer } from "@/components/layout/footer";
 import { Container } from "@/components/ui/container";
 import { ProductCard } from "@/components/ui/product-card";
 import { ProductBuyBox } from "@/components/shop/product-buy-box";
+import { ProductGallery } from "@/components/shop/product-gallery";
 import { getProduct, getProducts, toCardProduct } from "@/lib/printful";
 
 export async function generateStaticParams() {
@@ -81,23 +82,11 @@ export default async function ProductPage({
 
           <div className="grid gap-8 lg:grid-cols-[1.1fr_1fr] lg:gap-14 py-6">
             <div className="lg:sticky lg:top-20 lg:h-fit">
-              <div className="aspect-square bg-blue-tint rounded-2xl flex items-center justify-center">
-                <div className="w-1/2 aspect-[1/1.15] bg-cream rounded-lg flex items-center justify-center">
-                  <div className="font-mono font-medium text-navy text-2xl leading-tight text-center">
-                    {product.type.toUpperCase()}
-                    <br />
-                    <span className="text-red">MOCKUP</span>
-                  </div>
-                </div>
-              </div>
-              <div className="mt-3 grid grid-cols-4 gap-2">
-                {[0, 1, 2, 3].map((i) => (
-                  <div
-                    key={i}
-                    className={`aspect-square rounded-lg border ${i === 0 ? "border-navy" : "border-hairline"} ${["bg-blue-tint", "bg-red-tint", "bg-cream", "bg-navy"][i]}`}
-                  />
-                ))}
-              </div>
+              <ProductGallery
+                images={product.images}
+                productType={product.type}
+                productName={product.name}
+              />
             </div>
 
             <ProductBuyBox product={product} />
@@ -105,7 +94,10 @@ export default async function ProductPage({
 
           <section className="py-10 border-t border-hairline">
             <div className="grid gap-8 lg:grid-cols-3">
-              <Detail title="Details">{product.description}</Detail>
+              <Detail title="Details">
+                {product.description ||
+                  `${product.name} — printed on demand by HyFy Designs. Each piece produced fresh when you order and shipped directly to you.`}
+              </Detail>
               <Detail title="Sizing">
                 Runs true to size. Unisex fit — size down for a slimmer cut.
                 Size chart available at checkout.
