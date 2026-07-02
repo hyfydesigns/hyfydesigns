@@ -1,7 +1,8 @@
 import type { Product } from "@/components/ui/product-card";
 
 export type PrintfulVariant = {
-  id: string;
+  id: string; // sync_variant_id — used for creating orders
+  catalogVariantId?: number; // catalog variant_id — used for shipping rate lookup (absent on mock data)
   color: string;
   size: string;
   price: number;
@@ -113,7 +114,7 @@ export type ShippingRate = {
 
 export async function getShippingRates(payload: {
   address: ShippingAddress;
-  items: { variantId: string; quantity: number }[];
+  items: { catalogVariantId: number; quantity: number }[];
 }): Promise<ShippingRate[]> {
   if (!apiKey) {
     return [
@@ -136,7 +137,7 @@ export async function getShippingRates(payload: {
         country_code: payload.address.country,
       },
       items: payload.items.map((i) => ({
-        sync_variant_id: Number(i.variantId),
+        variant_id: i.catalogVariantId,
         quantity: i.quantity,
       })),
     }),
@@ -249,6 +250,7 @@ function mapDetail(
 
   const variants = d.sync_variants.map((v) => ({
     id: String(v.id),
+    catalogVariantId: v.variant_id,
     color: extractColor(v.name),
     size: extractSize(v.name),
     price: Number(v.retail_price),
