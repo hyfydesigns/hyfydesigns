@@ -22,6 +22,10 @@ const map: Record<string, string> = {
   darkgray: "#3D3D3A",
   charcoal: "#2E2E2C",
   darkheather: "#4A4A48",
+  graphiteheather: "#414147",
+  heathergraphite: "#414147",
+  heatherdarkgrey: "#3A3A3E",
+  heatherdarkgray: "#3A3A3E",
 
   // Blues
   navy: "#0A2A6E",
@@ -34,6 +38,12 @@ const map: Record<string, string> = {
   carolinablue: "#7CB0E0",
   denim: "#3A5A80",
   indigo: "#2D2E82",
+  indigoblue: "#2A3F87",
+  heathernavy: "#2C3A56",
+  heatherblue: "#4A6B8F",
+  heathersportroyal: "#2E4A9E",
+  heathersportnavy: "#2C3A56",
+  heathersportdarknavy: "#1F2A45",
   teal: "#0F6E56",
   turquoise: "#25B8B8",
 
@@ -63,6 +73,7 @@ const map: Record<string, string> = {
 
   // Greens
   green: "#1F8A3C",
+  irishgreen: "#009B48",
   forest: "#1F5A32",
   forestgreen: "#1F5A32",
   kellygreen: "#2AA042",
@@ -71,6 +82,8 @@ const map: Record<string, string> = {
   armygreen: "#575F38",
   olive: "#5F633C",
   hunter: "#264B2E",
+  heatherforestgreen: "#3E6349",
+  heatheririshgreen: "#2E8C4E",
   lime: "#8BC72C",
   mint: "#A6E1C1",
 
