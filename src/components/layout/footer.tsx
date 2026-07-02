@@ -150,6 +150,15 @@ export function Footer() {
             <span>© {new Date().getFullYear()} HyFy Designs</span>
           </div>
         </div>
+
+        <div className="border-t border-cream/10 py-4 flex flex-wrap gap-x-5 gap-y-2 text-xs text-cream/50">
+          <Link href="/privacy" className="hover:text-cream tap">
+            Privacy Policy
+          </Link>
+          <Link href="/terms" className="hover:text-cream tap">
+            Terms of Service
+          </Link>
+        </div>
       </Container>
     </footer>
   );
