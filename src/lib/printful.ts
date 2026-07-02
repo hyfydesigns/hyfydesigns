@@ -171,7 +171,7 @@ function mapDetail(
   const type = detectType(name);
   const category = categoryFor(type);
   const priceNum = Number(d.sync_variants[0]?.retail_price ?? "0");
-  const priceDisplay = `$${priceNum.toFixed(0)}`;
+  const priceDisplay = formatPrice(priceNum);
 
   const variants = d.sync_variants.map((v) => ({
     id: String(v.id),
@@ -209,6 +209,10 @@ function mapDetail(
     meta: `${colors.length} color${colors.length === 1 ? "" : "s"}`,
     priceDisplay,
   };
+}
+
+function formatPrice(n: number): string {
+  return n % 1 === 0 ? `$${n.toFixed(0)}` : `$${n.toFixed(2)}`;
 }
 
 function slugify(name: string): string {
