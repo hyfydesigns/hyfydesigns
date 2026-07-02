@@ -42,11 +42,7 @@ export async function POST(req: Request) {
   try {
     const sessionSummary = event.data.object;
     const session = await stripe.checkout.sessions.retrieve(sessionSummary.id, {
-      expand: [
-        "line_items.data.price.product",
-        "shipping_details",
-        "customer_details",
-      ],
+      expand: ["line_items.data.price.product"],
     });
     const lineItems = session.line_items ?? { data: [] };
 
@@ -73,21 +69,26 @@ export async function POST(req: Request) {
       });
     }
 
+    type ShippingBlob = {
+      name?: string | null;
+      address?: {
+        line1?: string | null;
+        city?: string | null;
+        state?: string | null;
+        postal_code?: string | null;
+        country?: string | null;
+      } | null;
+    };
+    // Newer Stripe API: shipping lives on collected_information.shipping_details.
+    // Older API (still in some Stripe accounts): shipping_details directly on session.
+    const sessionLoose = session as Stripe.Checkout.Session & {
+      shipping_details?: ShippingBlob | null;
+      collected_information?: { shipping_details?: ShippingBlob | null };
+    };
     const ship =
-      (
-        session as Stripe.Checkout.Session & {
-          shipping_details?: {
-            name?: string | null;
-            address?: {
-              line1?: string | null;
-              city?: string | null;
-              state?: string | null;
-              postal_code?: string | null;
-              country?: string | null;
-            } | null;
-          };
-        }
-      ).shipping_details ?? null;
+      sessionLoose.collected_information?.shipping_details ??
+      sessionLoose.shipping_details ??
+      null;
     const email = session.customer_details?.email ?? session.customer_email;
 
     if (!ship?.address || !email) {
