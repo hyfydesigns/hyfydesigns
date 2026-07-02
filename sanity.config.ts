@@ -21,6 +21,7 @@ export default defineConfig({
               .child(S.document().schemaType("homeHero").documentId("homeHero")),
             S.divider(),
             S.documentTypeListItem("collection").title("Collections"),
+            S.documentTypeListItem("productContent").title("Product content"),
             S.documentTypeListItem("lifestylePhoto").title("Lifestyle photos"),
             S.documentTypeListItem("portfolioProject").title("Portfolio projects"),
             S.documentTypeListItem("testimonial").title("Testimonials"),

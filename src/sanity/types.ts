@@ -52,3 +52,12 @@ export type CollectionDoc = {
   description?: string;
   productSlugs?: string[];
 };
+
+// PortableTextBlock — kept loose to avoid pulling the @portabletext/react
+// types into this shared module; the renderer casts as needed.
+export type ProductContentDoc = {
+  slug: string;
+  description?: unknown[];
+  sizingNote?: string;
+  careNote?: string;
+};

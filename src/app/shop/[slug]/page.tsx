@@ -2,12 +2,16 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { ChevronRight } from "lucide-react";
+import { PortableText, type PortableTextBlock } from "@portabletext/react";
 import { NavBar } from "@/components/layout/nav-bar";
 import { Footer } from "@/components/layout/footer";
 import { Container } from "@/components/ui/container";
 import { ProductCard } from "@/components/ui/product-card";
 import { ProductDetail } from "@/components/shop/product-detail";
 import { getProduct, getProducts, toCardProduct } from "@/lib/printful";
+import { sanityFetch } from "@/sanity/client";
+import { PRODUCT_CONTENT_QUERY } from "@/sanity/queries";
+import type { ProductContentDoc } from "@/sanity/types";
 
 export async function generateStaticParams() {
   const products = await getProducts();
@@ -22,13 +26,16 @@ export async function generateMetadata({
   const { slug } = await params;
   const product = await getProduct(slug);
   if (!product) return { title: "Not found" };
+  const content = await sanityFetch<ProductContentDoc | null>(
+    PRODUCT_CONTENT_QUERY,
+    { slug },
+    null,
+  );
+  const description = plainTextFromBlocks(content?.description) || product.description;
   return {
     title: product.name,
-    description: product.description,
-    openGraph: {
-      title: product.name,
-      description: product.description,
-    },
+    description,
+    openGraph: { title: product.name, description },
   };
 }
 
@@ -41,16 +48,24 @@ export default async function ProductPage({
   const product = await getProduct(slug);
   if (!product) notFound();
 
-  const all = await getProducts();
+  const [all, content] = await Promise.all([
+    getProducts(),
+    sanityFetch<ProductContentDoc | null>(PRODUCT_CONTENT_QUERY, { slug }, null),
+  ]);
+
   const related = all
     .filter((p) => p.slug !== slug && p.category === product.category)
     .slice(0, 4);
+
+  const descriptionBlocks = content?.description as PortableTextBlock[] | undefined;
+  const jsonLdDescription =
+    plainTextFromBlocks(descriptionBlocks) || product.description || product.name;
 
   const jsonLd = {
     "@context": "https://schema.org/",
     "@type": "Product",
     name: product.name,
-    description: product.description,
+    description: jsonLdDescription,
     offers: {
       "@type": "Offer",
       priceCurrency: "USD",
@@ -84,16 +99,65 @@ export default async function ProductPage({
           <section className="py-10 border-t border-hairline">
             <div className="grid gap-8 lg:grid-cols-3">
               <Detail title="Details">
-                {product.description ||
-                  `${product.name} — printed on demand by HyFy Designs. Each piece produced fresh when you order and shipped directly to you.`}
+                {descriptionBlocks && descriptionBlocks.length > 0 ? (
+                  <PortableText
+                    value={descriptionBlocks}
+                    components={{
+                      block: {
+                        h3: ({ children }) => (
+                          <h4 className="text-base font-medium text-navy mt-4 first:mt-0 mb-1">
+                            {children}
+                          </h4>
+                        ),
+                        normal: ({ children }) => (
+                          <p className="mb-3 last:mb-0 leading-relaxed">
+                            {children}
+                          </p>
+                        ),
+                      },
+                      list: {
+                        bullet: ({ children }) => (
+                          <ul className="list-disc pl-5 mb-3 space-y-1">
+                            {children}
+                          </ul>
+                        ),
+                        number: ({ children }) => (
+                          <ol className="list-decimal pl-5 mb-3 space-y-1">
+                            {children}
+                          </ol>
+                        ),
+                      },
+                      marks: {
+                        link: ({ value, children }) => (
+                          <a
+                            href={value?.href}
+                            className="underline text-navy hover:text-blue"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            {children}
+                          </a>
+                        ),
+                      },
+                    }}
+                  />
+                ) : product.description ? (
+                  <p className="leading-relaxed">{product.description}</p>
+                ) : (
+                  <p className="leading-relaxed">
+                    {product.name} — printed on demand by HyFy Designs. Each
+                    piece produced fresh when you order and shipped directly
+                    to you.
+                  </p>
+                )}
               </Detail>
               <Detail title="Sizing">
-                Runs true to size. Unisex fit — size down for a slimmer cut.
-                Size chart available at checkout.
+                {content?.sizingNote ??
+                  "Runs true to size. Unisex fit — size down for a slimmer cut. Size chart available at checkout."}
               </Detail>
               <Detail title="Shipping & care">
-                Ships in 3–5 business days via Printful. Machine wash cold,
-                tumble dry low, do not iron directly on print.
+                {content?.careNote ??
+                  "Ships in 3–5 business days via Printful. Machine wash cold, tumble dry low, do not iron directly on print."}
               </Detail>
             </div>
           </section>
@@ -129,7 +193,22 @@ function Detail({
   return (
     <div>
       <h3 className="text-lg mb-2">{title}</h3>
-      <p className="text-sm text-ink-600 leading-relaxed">{children}</p>
+      <div className="text-sm text-ink-600">{children}</div>
     </div>
   );
+}
+
+function plainTextFromBlocks(
+  blocks: unknown[] | undefined,
+): string {
+  if (!Array.isArray(blocks)) return "";
+  return blocks
+    .map((b) => {
+      const block = b as { _type?: string; children?: Array<{ text?: string }> };
+      if (block._type !== "block" || !Array.isArray(block.children)) return "";
+      return block.children.map((c) => c.text ?? "").join("");
+    })
+    .join(" ")
+    .trim()
+    .slice(0, 300);
 }

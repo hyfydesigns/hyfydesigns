@@ -41,3 +41,9 @@ export const COLLECTION_QUERY = groq`
 export const ALL_COLLECTION_SLUGS_QUERY = groq`
   *[_type == "collection" && defined(slug.current)]{ "slug": slug.current }
 `;
+
+export const PRODUCT_CONTENT_QUERY = groq`
+  *[_type == "productContent" && slug == $slug][0]{
+    slug, description, sizingNote, careNote
+  }
+`;
