@@ -6,6 +6,12 @@ export const HOME_HERO_QUERY = groq`
   }
 `;
 
+export const HERO_SLIDES_QUERY = groq`
+  *[_type == "heroSlide" && active == true] | order(order asc){
+    _id, alt, badgeLabel, linkHref, image
+  }
+`;
+
 export const LIFESTYLE_PHOTOS_QUERY = groq`
   *[_type == "lifestylePhoto"] | order(order asc){
     _id, location, caption, aspect,

@@ -13,6 +13,14 @@ export type HomeHeroDoc = {
   secondaryCta?: { label?: string; href?: string };
 };
 
+export type HeroSlideDoc = {
+  _id: string;
+  alt: string;
+  badgeLabel?: string;
+  linkHref?: string;
+  image: SanityImage;
+};
+
 export type LifestylePhotoDoc = {
   _id: string;
   location: string;

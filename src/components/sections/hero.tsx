@@ -3,8 +3,9 @@ import { Container } from "@/components/ui/container";
 import { ButtonLink } from "@/components/ui/button";
 import { Eyebrow } from "@/components/ui/badge";
 import { sanityFetch } from "@/sanity/client";
-import { HOME_HERO_QUERY } from "@/sanity/queries";
-import type { HomeHeroDoc } from "@/sanity/types";
+import { HOME_HERO_QUERY, HERO_SLIDES_QUERY } from "@/sanity/queries";
+import type { HomeHeroDoc, HeroSlideDoc } from "@/sanity/types";
+import { HeroCarousel } from "./hero-carousel";
 
 type CtaCopy = { label: string; href: string };
 
@@ -21,7 +22,10 @@ const defaults: {
 };
 
 export async function Hero() {
-  const doc = await sanityFetch<HomeHeroDoc | null>(HOME_HERO_QUERY, {}, null);
+  const [doc, slides] = await Promise.all([
+    sanityFetch<HomeHeroDoc | null>(HOME_HERO_QUERY, {}, null),
+    sanityFetch<HeroSlideDoc[]>(HERO_SLIDES_QUERY, {}, []),
+  ]);
 
   const eyebrow = doc?.eyebrow ?? defaults.eyebrow;
   const sub = doc?.sub ?? defaults.sub;
@@ -88,21 +92,25 @@ export async function Hero() {
             </div>
           </div>
 
-          <div className="order-2 relative aspect-square lg:aspect-[4/5] rounded-2xl bg-blue overflow-hidden flex items-center justify-center">
-            <div className="absolute top-4 right-4 px-3 py-1.5 rounded-full bg-red text-cream text-[10px] uppercase tracking-[0.06em] font-medium">
-              New drop
+          {slides.length > 0 ? (
+            <HeroCarousel slides={slides} />
+          ) : (
+            <div className="order-2 relative aspect-square lg:aspect-[4/5] rounded-2xl bg-blue overflow-hidden flex items-center justify-center">
+              <div className="absolute top-4 right-4 px-3 py-1.5 rounded-full bg-red text-cream text-[10px] uppercase tracking-[0.06em] font-medium">
+                New drop
+              </div>
+              <ShirtGraphic />
+              <div className="absolute bottom-4 left-4 flex gap-1.5">
+                {["#0A2A6E", "#E02D2D", "#FDFBF5", "#8FB4F5"].map((c) => (
+                  <span
+                    key={c}
+                    className="h-4 w-4 rounded-full border-2 border-white/70"
+                    style={{ background: c }}
+                  />
+                ))}
+              </div>
             </div>
-            <ShirtGraphic />
-            <div className="absolute bottom-4 left-4 flex gap-1.5">
-              {["#0A2A6E", "#E02D2D", "#FDFBF5", "#8FB4F5"].map((c) => (
-                <span
-                  key={c}
-                  className="h-4 w-4 rounded-full border-2 border-white/70"
-                  style={{ background: c }}
-                />
-              ))}
-            </div>
-          </div>
+          )}
         </div>
       </Container>
     </section>

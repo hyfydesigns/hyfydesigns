@@ -19,6 +19,7 @@ export default defineConfig({
             S.listItem()
               .title("Home hero")
               .child(S.document().schemaType("homeHero").documentId("homeHero")),
+            S.documentTypeListItem("heroSlide").title("Hero slides"),
             S.divider(),
             S.documentTypeListItem("collection").title("Collections"),
             S.documentTypeListItem("productContent").title("Product content"),
