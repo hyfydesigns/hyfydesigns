@@ -273,24 +273,33 @@ export function CheckoutClient() {
                       value={r.id}
                       checked={active}
                       onChange={() => setSelectedRateId(r.id)}
-                      className="mt-1"
+                      className="mt-1 flex-shrink-0"
                     />
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="font-medium text-navy text-sm">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-3">
+                        <span className="font-medium text-navy text-sm min-w-0 break-words">
                           {r.name}
                         </span>
-                        <span className="font-medium text-navy">
+                        <span className="font-medium text-navy flex-shrink-0">
                           ${r.rate.toFixed(2)}
                         </span>
                       </div>
-                      <p className="text-xs text-ink-400 mt-0.5 inline-flex items-center gap-1">
-                        <Truck className="h-3 w-3" strokeWidth={2} />
-                        {r.minDays}–{r.maxDays} business days after fulfillment
+                      <p className="text-xs text-ink-400 mt-0.5 flex items-start gap-1">
+                        <Truck
+                          className="h-3 w-3 mt-0.5 flex-shrink-0"
+                          strokeWidth={2}
+                        />
+                        <span>
+                          {r.minDays}–{r.maxDays} business days after
+                          fulfillment
+                        </span>
                       </p>
                     </div>
                     {active && (
-                      <Check className="h-4 w-4 text-navy" strokeWidth={2.5} />
+                      <Check
+                        className="h-4 w-4 text-navy flex-shrink-0"
+                        strokeWidth={2.5}
+                      />
                     )}
                   </label>
                 );
