@@ -129,8 +129,8 @@ export function CheckoutClient() {
   }
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[1.4fr_1fr]">
-      <div className="space-y-8">
+    <div className="grid gap-8 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+      <div className="space-y-8 min-w-0">
         <section className="bg-white border border-hairline rounded-2xl p-5 sm:p-7">
           <div className="flex items-center gap-2 mb-5">
             <span className="h-6 w-6 rounded-full bg-navy text-cream text-xs font-medium inline-flex items-center justify-center">
@@ -329,7 +329,7 @@ export function CheckoutClient() {
         )}
       </div>
 
-      <aside className="lg:sticky lg:top-20 lg:h-fit">
+      <aside className="lg:sticky lg:top-20 lg:h-fit min-w-0">
         <div className="bg-white border border-hairline rounded-2xl p-5 sm:p-6">
           <h3 className="text-lg mb-4">Order summary</h3>
           <ul className="space-y-3 pb-4 border-b border-hairline">
