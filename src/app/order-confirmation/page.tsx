@@ -1,9 +1,11 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { Check, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { NavBar } from "@/components/layout/nav-bar";
 import { Footer } from "@/components/layout/footer";
 import { Container } from "@/components/ui/container";
+import { CartClearOnMount } from "@/components/cart/cart-clear-on-mount";
 
 export const metadata: Metadata = {
   title: "Order confirmed",
@@ -14,6 +16,9 @@ export default function OrderConfirmationPage() {
   return (
     <>
       <NavBar />
+      <Suspense fallback={null}>
+        <CartClearOnMount />
+      </Suspense>
       <main className="flex-1">
         <Container size="narrow">
           <div className="py-16 sm:py-24 text-center">
