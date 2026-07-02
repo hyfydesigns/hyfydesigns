@@ -42,6 +42,8 @@ const map: Record<string, string> = {
   lightblue: "#8FB4F5",
   babyblue: "#B7D3F5",
   carolinablue: "#7CB0E0",
+  columbiablue: "#9DB7DC",
+  heathercolumbiablue: "#A0BAD1",
   denim: "#3A5A80",
   indigo: "#2D2E82",
   indigoblue: "#2A3F87",
@@ -76,11 +78,13 @@ const map: Record<string, string> = {
   autumn: "#B0522A",
   gold: "#E3B02F",
   yellow: "#F0D42B",
+  daisy: "#FFDD3D",
   mustard: "#C99A24",
 
   // Greens
   green: "#1F8A3C",
   irishgreen: "#009B48",
+  turfgreen: "#009F4C",
   forest: "#1F5A32",
   forestgreen: "#1F5A32",
   kellygreen: "#2AA042",
@@ -103,6 +107,8 @@ const map: Record<string, string> = {
   brown: "#5A3D28",
   chocolate: "#3D2A1A",
   darkchocolate: "#2B1810",
+  brownsavana: "#A5947D",
+  brownsavanna: "#A5947D",
   tan: "#B58A5A",
   khaki: "#B0A17D",
 
