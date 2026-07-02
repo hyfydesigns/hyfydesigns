@@ -1,16 +1,23 @@
 "use client";
 
-import { useState } from "react";
 import { ArrowRight, Check } from "lucide-react";
 import { cn } from "@/lib/cn";
 import type { PrintfulProduct } from "@/lib/printful";
+import { swatchColor, isLightSwatch } from "@/lib/swatch-colors";
 
-export function ProductBuyBox({ product }: { product: PrintfulProduct }) {
-  const [color, setColor] = useState(product.colors[0]);
-  const [size, setSize] = useState<string | null>(
-    product.variants[0]?.size ?? null,
-  );
-
+export function ProductBuyBox({
+  product,
+  color,
+  size,
+  onColorChange,
+  onSizeChange,
+}: {
+  product: PrintfulProduct;
+  color: string;
+  size: string | null;
+  onColorChange: (c: string) => void;
+  onSizeChange: (s: string) => void;
+}) {
   const sizes = Array.from(new Set(product.variants.map((v) => v.size)));
   const isCustom = product.category === "custom";
 
@@ -23,9 +30,6 @@ export function ProductBuyBox({ product }: { product: PrintfulProduct }) {
       <p className="mt-3 text-2xl font-medium text-navy font-display">
         {product.priceDisplay}
       </p>
-      <p className="mt-4 text-sm sm:text-base text-ink-600 leading-relaxed">
-        {product.description}
-      </p>
 
       {product.colors.length > 0 && (
         <div className="mt-6">
@@ -33,28 +37,37 @@ export function ProductBuyBox({ product }: { product: PrintfulProduct }) {
             Color · <span className="text-navy normal-case">{color}</span>
           </p>
           <div className="flex flex-wrap gap-2">
-            {product.colors.map((c) => (
-              <button
-                key={c}
-                onClick={() => setColor(c)}
-                aria-label={c}
-                className={cn(
-                  "h-9 w-9 rounded-full border-2 flex items-center justify-center transition-all tap",
-                  c === color ? "border-navy scale-110" : "border-hairline",
-                )}
-                style={{ background: swatchColor(c) }}
-              >
-                {c === color && (
-                  <Check
-                    className={cn(
-                      "h-4 w-4",
-                      isLight(c) ? "text-navy" : "text-cream",
-                    )}
-                    strokeWidth={3}
-                  />
-                )}
-              </button>
-            ))}
+            {product.colors.map((c) => {
+              const bg = swatchColor(c);
+              const isGradient = bg.startsWith("linear");
+              return (
+                <button
+                  key={c}
+                  onClick={() => onColorChange(c)}
+                  aria-label={c}
+                  title={c}
+                  className={cn(
+                    "h-9 w-9 rounded-full border-2 flex items-center justify-center transition-all tap",
+                    c === color
+                      ? "border-navy scale-110 ring-2 ring-navy/10"
+                      : "border-hairline-strong hover:border-navy",
+                  )}
+                  style={
+                    isGradient ? { backgroundImage: bg } : { background: bg }
+                  }
+                >
+                  {c === color && (
+                    <Check
+                      className={cn(
+                        "h-4 w-4",
+                        isLightSwatch(c) ? "text-navy" : "text-cream",
+                      )}
+                      strokeWidth={3}
+                    />
+                  )}
+                </button>
+              );
+            })}
           </div>
         </div>
       )}
@@ -68,7 +81,7 @@ export function ProductBuyBox({ product }: { product: PrintfulProduct }) {
             {sizes.map((s) => (
               <button
                 key={s}
-                onClick={() => setSize(s)}
+                onClick={() => onSizeChange(s)}
                 className={cn(
                   "min-h-11 text-sm font-medium rounded-lg border transition-colors tap",
                   s === size
@@ -117,23 +130,4 @@ export function ProductBuyBox({ product }: { product: PrintfulProduct }) {
       </div>
     </div>
   );
-}
-
-function swatchColor(name: string): string {
-  const map: Record<string, string> = {
-    Navy: "#0A2A6E",
-    Cream: "#FDFBF5",
-    Red: "#E02D2D",
-    Blue: "#1E4FD9",
-    White: "#FFFFFF",
-    Mixed: "linear-gradient(45deg, #0A2A6E 25%, #E02D2D 25% 50%, #1E4FD9 50% 75%, #FDFBF5 75%)",
-    Wood: "#B8865A",
-    Metal: "#9CA3AF",
-    Acrylic: "#E5E7EB",
-  };
-  return map[name] ?? "#E6EEFB";
-}
-
-function isLight(name: string) {
-  return ["Cream", "White", "Acrylic"].includes(name);
 }

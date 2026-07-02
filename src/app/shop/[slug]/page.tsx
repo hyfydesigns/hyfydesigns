@@ -6,8 +6,7 @@ import { NavBar } from "@/components/layout/nav-bar";
 import { Footer } from "@/components/layout/footer";
 import { Container } from "@/components/ui/container";
 import { ProductCard } from "@/components/ui/product-card";
-import { ProductBuyBox } from "@/components/shop/product-buy-box";
-import { ProductGallery } from "@/components/shop/product-gallery";
+import { ProductDetail } from "@/components/shop/product-detail";
 import { getProduct, getProducts, toCardProduct } from "@/lib/printful";
 
 export async function generateStaticParams() {
@@ -80,17 +79,7 @@ export default async function ProductPage({
             <span className="text-navy">{product.name}</span>
           </nav>
 
-          <div className="grid gap-8 lg:grid-cols-[1.1fr_1fr] lg:gap-14 py-6">
-            <div className="lg:sticky lg:top-20 lg:h-fit">
-              <ProductGallery
-                images={product.images}
-                productType={product.type}
-                productName={product.name}
-              />
-            </div>
-
-            <ProductBuyBox product={product} />
-          </div>
+          <ProductDetail product={product} />
 
           <section className="py-10 border-t border-hairline">
             <div className="grid gap-8 lg:grid-cols-3">
