@@ -60,7 +60,7 @@ export function Footer() {
         <div className="py-12 sm:py-16 grid gap-10 sm:grid-cols-2 lg:grid-cols-5">
           <div className="lg:col-span-2">
             <Image
-              src="/hyfy-logo-2026-Light.png"
+              src="/hyfy-logo-2026-Dark.png"
               alt="HyFy Designs"
               width={520}
               height={400}
