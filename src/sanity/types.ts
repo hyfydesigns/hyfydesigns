@@ -21,6 +21,19 @@ export type HeroSlideDoc = {
   image: SanityImage;
 };
 
+export type ContactPageDoc = {
+  eyebrow?: string;
+  headline?: string;
+  intro?: string;
+  formHeading?: string;
+  studioAddress?: string;
+  studioHours?: string;
+  studioPhone?: string;
+  studioEmail?: string;
+  mapEmbedSrc?: string;
+  subjects?: string[];
+};
+
 export type LifestylePhotoDoc = {
   _id: string;
   location: string;

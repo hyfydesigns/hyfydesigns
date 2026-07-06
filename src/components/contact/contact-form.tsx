@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Check } from "lucide-react";
 
-const subjects = [
+const DEFAULT_SUBJECTS = [
   "General question",
   "Custom order",
   "Bulk / team order",
@@ -11,7 +11,9 @@ const subjects = [
   "Press",
 ];
 
-export function ContactForm() {
+export function ContactForm({ subjects }: { subjects?: string[] }) {
+  const options =
+    subjects && subjects.length > 0 ? subjects : DEFAULT_SUBJECTS;
   const [status, setStatus] = useState<"idle" | "submitting" | "done">("idle");
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -71,10 +73,10 @@ export function ContactForm() {
         </span>
         <select
           name="subject"
-          defaultValue={subjects[0]}
+          defaultValue={options[0]}
           className="w-full min-h-11 rounded-lg border border-hairline-strong bg-white px-3 text-sm focus:outline-none focus:border-navy"
         >
-          {subjects.map((s) => (
+          {options.map((s) => (
             <option key={s} value={s}>
               {s}
             </option>

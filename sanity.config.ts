@@ -20,6 +20,13 @@ export default defineConfig({
               .title("Home hero")
               .child(S.document().schemaType("homeHero").documentId("homeHero")),
             S.documentTypeListItem("heroSlide").title("Hero slides"),
+            S.listItem()
+              .title("Contact page")
+              .child(
+                S.document()
+                  .schemaType("contactPage")
+                  .documentId("contactPage"),
+              ),
             S.divider(),
             S.documentTypeListItem("collection").title("Collections"),
             S.documentTypeListItem("productContent").title("Product content"),

@@ -12,6 +12,14 @@ export const HERO_SLIDES_QUERY = groq`
   }
 `;
 
+export const CONTACT_PAGE_QUERY = groq`
+  *[_type == "contactPage"][0]{
+    eyebrow, headline, intro, formHeading,
+    studioAddress, studioHours, studioPhone, studioEmail,
+    mapEmbedSrc, subjects
+  }
+`;
+
 export const LIFESTYLE_PHOTOS_QUERY = groq`
   *[_type == "lifestylePhoto"] | order(order asc){
     _id, location, caption, aspect,
