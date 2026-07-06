@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
+import { Truck } from "lucide-react";
 import { NavBar } from "@/components/layout/nav-bar";
 import { Footer } from "@/components/layout/footer";
 import { Container } from "@/components/ui/container";
@@ -30,9 +31,12 @@ export default async function ShopPage({
           <Container>
             <h1 className="text-3xl sm:text-4xl">Shop the studio.</h1>
             <p className="mt-2 text-ink-600 text-sm sm:text-base max-w-xl">
-              Every piece printed to order. Ships in 3–5 business days from
-              Printful.
+              Every piece printed to order. Ships in 3–5 business days.
             </p>
+            <div className="mt-3 inline-flex items-center gap-1.5 text-xs text-ink-400">
+              <Truck className="h-3.5 w-3.5 text-blue" strokeWidth={2} />
+              Fulfilled by Printful
+            </div>
           </Container>
         </section>
 

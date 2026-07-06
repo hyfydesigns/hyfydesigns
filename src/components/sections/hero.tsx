@@ -1,4 +1,4 @@
-import { MapPin, ArrowRight, Truck, Star } from "lucide-react";
+import { MapPin, ArrowRight, Star } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { ButtonLink } from "@/components/ui/button";
 import { Eyebrow } from "@/components/ui/badge";
@@ -81,10 +81,6 @@ export async function Hero() {
               </ButtonLink>
             </div>
             <div className="mt-6 sm:mt-8 flex flex-wrap gap-x-5 gap-y-2 text-xs text-ink-400">
-              <span className="inline-flex items-center gap-1.5">
-                <Truck className="h-3.5 w-3.5 text-blue" strokeWidth={2} />
-                Fulfilled by Printful
-              </span>
               <span className="inline-flex items-center gap-1.5">
                 <Star className="h-3.5 w-3.5 text-blue" strokeWidth={2} />
                 4.9 avg rating
