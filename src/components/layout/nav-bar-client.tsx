@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Menu, Search, User, X, ChevronDown } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { CartButton } from "@/components/layout/cart-button";
@@ -42,9 +43,16 @@ export function NavBarClient({
               <Link
                 href="/"
                 aria-label="HyFy Designs home"
-                className="font-display text-lg sm:text-xl font-medium tracking-tight text-navy"
+                className="inline-flex items-center"
               >
-                Hy<span className="text-blue">Fy</span> Designs
+                <Image
+                  src="/hyfy-logo.png"
+                  alt="HyFy Designs"
+                  width={520}
+                  height={400}
+                  priority
+                  className="h-9 sm:h-11 w-auto"
+                />
               </Link>
             </div>
 
@@ -106,9 +114,13 @@ export function NavBarClient({
           )}
         >
           <div className="flex items-center justify-between px-5 h-14 border-b border-hairline">
-            <span className="font-display text-lg font-medium text-navy">
-              Hy<span className="text-blue">Fy</span> Designs
-            </span>
+            <Image
+              src="/hyfy-logo.png"
+              alt="HyFy Designs"
+              width={520}
+              height={400}
+              className="h-9 w-auto"
+            />
             <button
               type="button"
               onClick={() => setOpen(false)}
