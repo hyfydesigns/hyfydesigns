@@ -46,7 +46,7 @@ export function NavBarClient({
                 className="inline-flex items-center"
               >
                 <Image
-                  src="/hyfy-logo.png"
+                  src="/hyfy-logo-2026-Dark.png"
                   alt="HyFy Designs"
                   width={520}
                   height={400}
@@ -115,7 +115,7 @@ export function NavBarClient({
         >
           <div className="flex items-center justify-between px-5 h-14 border-b border-hairline">
             <Image
-              src="/hyfy-logo.png"
+              src="/hyfy-logo-2026-Dark.png"
               alt="HyFy Designs"
               width={520}
               height={400}

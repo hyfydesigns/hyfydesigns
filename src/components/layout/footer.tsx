@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Mail, Phone, MapPin } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { site } from "@/lib/site";
@@ -58,9 +59,13 @@ export function Footer() {
       <Container>
         <div className="py-12 sm:py-16 grid gap-10 sm:grid-cols-2 lg:grid-cols-5">
           <div className="lg:col-span-2">
-            <p className="font-display text-2xl font-medium tracking-tight text-cream">
-              Hy<span className="text-blue-light">Fy</span> Designs
-            </p>
+            <Image
+              src="/hyfy-logo-2026-Light.png"
+              alt="HyFy Designs"
+              width={520}
+              height={400}
+              className="h-14 w-auto"
+            />
             <p className="mt-3 text-sm text-cream/75 leading-relaxed max-w-sm">
               {site.tagline}
             </p>
