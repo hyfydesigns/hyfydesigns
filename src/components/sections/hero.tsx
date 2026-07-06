@@ -50,7 +50,7 @@ export async function Hero() {
             </Eyebrow>
             {doc?.headline ? (
               <h1 className="mt-4 text-[34px] sm:text-5xl lg:text-6xl leading-[1.03] font-medium text-navy">
-                {doc.headline}
+                {renderHeadline(doc.headline)}
               </h1>
             ) : (
               <h1 className="mt-4 text-[34px] sm:text-5xl lg:text-6xl leading-[1.03] font-medium text-navy">
@@ -115,6 +115,57 @@ export async function Hero() {
       </Container>
     </section>
   );
+}
+
+// Parses a headline string with *asterisks* for the red highlight strip and
+// _underscores_ for the blue accent color. Newlines become <br /> so editors
+// can control line breaks from the CMS.
+function renderHeadline(text: string): React.ReactNode[] {
+  const nodes: React.ReactNode[] = [];
+  const lines = text.split(/\r?\n/);
+  lines.forEach((line, lineIdx) => {
+    const parts = parseInlineMarks(line, `${lineIdx}`);
+    nodes.push(...parts);
+    if (lineIdx < lines.length - 1) {
+      nodes.push(<br key={`br-${lineIdx}`} />);
+    }
+  });
+  return nodes;
+}
+
+function parseInlineMarks(line: string, keyPrefix: string): React.ReactNode[] {
+  const parts: React.ReactNode[] = [];
+  const regex = /(\*[^*\n]+\*|_[^_\n]+_)/g;
+  let lastIndex = 0;
+  let idx = 0;
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(line)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(line.slice(lastIndex, match.index));
+    }
+    const token = match[0];
+    const inner = token.slice(1, -1);
+    const key = `${keyPrefix}-${idx++}`;
+    if (token.startsWith("*")) {
+      parts.push(
+        <span key={key} className="relative inline-block">
+          <span className="relative z-10">{inner}</span>
+          <span className="absolute left-0 right-0 bottom-1 h-3 sm:h-4 bg-red -z-0" />
+        </span>,
+      );
+    } else {
+      parts.push(
+        <span key={key} className="text-blue">
+          {inner}
+        </span>,
+      );
+    }
+    lastIndex = regex.lastIndex;
+  }
+  if (lastIndex < line.length) {
+    parts.push(line.slice(lastIndex));
+  }
+  return parts;
 }
 
 function ShirtGraphic() {
