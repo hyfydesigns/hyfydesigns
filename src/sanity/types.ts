@@ -67,6 +67,7 @@ export type ProductContentDoc = {
   slug: string;
   htmlDescription?: string;
   description?: unknown[];
+  featuredColor?: string;
   sizingNote?: string;
   careNote?: string;
 };

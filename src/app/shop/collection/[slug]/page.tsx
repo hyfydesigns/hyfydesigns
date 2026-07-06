@@ -6,7 +6,8 @@ import { NavBar } from "@/components/layout/nav-bar";
 import { Footer } from "@/components/layout/footer";
 import { Container } from "@/components/ui/container";
 import { ProductCard } from "@/components/ui/product-card";
-import { getProducts, toCardProduct } from "@/lib/printful";
+import { toCardProduct } from "@/lib/printful";
+import { getProductsWithContent } from "@/lib/products";
 import { sanityFetch } from "@/sanity/client";
 import {
   COLLECTION_QUERY,
@@ -58,7 +59,7 @@ export default async function CollectionPage({
   );
   if (!collection) notFound();
 
-  const allProducts = await getProducts();
+  const allProducts = await getProductsWithContent();
   const productSlugs = collection.productSlugs ?? [];
   const productMap = new Map(allProducts.map((p) => [p.slug, p]));
   const products = productSlugs

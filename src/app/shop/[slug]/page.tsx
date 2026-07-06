@@ -10,6 +10,7 @@ import { Container } from "@/components/ui/container";
 import { ProductCard } from "@/components/ui/product-card";
 import { ProductDetail } from "@/components/shop/product-detail";
 import { getProduct, getProducts, toCardProduct } from "@/lib/printful";
+import { applyFeaturedColor, getProductsWithContent } from "@/lib/products";
 import { sanityFetch } from "@/sanity/client";
 import { PRODUCT_CONTENT_QUERY } from "@/sanity/queries";
 import type { ProductContentDoc } from "@/sanity/types";
@@ -66,13 +67,15 @@ export default async function ProductPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const product = await getProduct(slug);
-  if (!product) notFound();
+  const rawProduct = await getProduct(slug);
+  if (!rawProduct) notFound();
 
   const [all, content] = await Promise.all([
-    getProducts(),
+    getProductsWithContent(),
     sanityFetch<ProductContentDoc | null>(PRODUCT_CONTENT_QUERY, { slug }, null),
   ]);
+
+  const product = applyFeaturedColor(rawProduct, content?.featuredColor);
 
   const related = all
     .filter((p) => p.slug !== slug && p.category === product.category)

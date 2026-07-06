@@ -50,6 +50,12 @@ export const ALL_COLLECTION_SLUGS_QUERY = groq`
 
 export const PRODUCT_CONTENT_QUERY = groq`
   *[_type == "productContent" && slug == $slug][0]{
-    slug, htmlDescription, description, sizingNote, careNote
+    slug, htmlDescription, description, featuredColor, sizingNote, careNote
+  }
+`;
+
+export const ALL_FEATURED_COLORS_QUERY = groq`
+  *[_type == "productContent" && defined(featuredColor) && featuredColor != ""]{
+    slug, featuredColor
   }
 `;

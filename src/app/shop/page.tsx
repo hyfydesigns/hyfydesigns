@@ -6,7 +6,8 @@ import { Footer } from "@/components/layout/footer";
 import { Container } from "@/components/ui/container";
 import { ProductCard } from "@/components/ui/product-card";
 import { FilterSidebar } from "@/components/shop/filter-sidebar";
-import { getProducts, toCardProduct, type PrintfulProduct } from "@/lib/printful";
+import { toCardProduct, type PrintfulProduct } from "@/lib/printful";
+import { getProductsWithContent } from "@/lib/products";
 
 export const metadata: Metadata = {
   title: "Shop",
@@ -20,7 +21,7 @@ export default async function ShopPage({
   searchParams: Promise<Record<string, string | string[]>>;
 }) {
   const sp = await searchParams;
-  const all = await getProducts();
+  const all = await getProductsWithContent();
   const filtered = applyFilters(all, sp);
 
   return (

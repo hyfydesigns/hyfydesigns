@@ -1,5 +1,6 @@
 import { defineType, defineField } from "sanity";
 import { ProductPickerSingle } from "../components/product-picker-single";
+import { FeaturedColorPicker } from "../components/featured-color-picker";
 
 export const productContent = defineType({
   name: "productContent",
@@ -54,6 +55,14 @@ export const productContent = defineType({
       ],
       description:
         "Only used if the HTML field above is empty. Structured editor with bullets, links, formatting.",
+    }),
+    defineField({
+      name: "featuredColor",
+      title: "Featured mockup color",
+      type: "string",
+      description:
+        "Pick which color variant's mockup appears first on the shop grid and product page. Leave blank to use Printful's default.",
+      components: { input: FeaturedColorPicker },
     }),
     defineField({
       name: "sizingNote",

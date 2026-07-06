@@ -1,9 +1,10 @@
 import { Container } from "@/components/ui/container";
 import { ProductCard } from "@/components/ui/product-card";
-import { getProducts, toCardProduct } from "@/lib/printful";
+import { toCardProduct } from "@/lib/printful";
+import { getProductsWithContent } from "@/lib/products";
 
 export async function BestSellers() {
-  const products = await getProducts();
+  const products = await getProductsWithContent();
   const bestSellers = products.slice(2, 6);
 
   return (

@@ -2,10 +2,11 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { ProductCard } from "@/components/ui/product-card";
-import { getProducts, toCardProduct } from "@/lib/printful";
+import { toCardProduct } from "@/lib/printful";
+import { getProductsWithContent } from "@/lib/products";
 
 export async function FeaturedMerch() {
-  const products = await getProducts();
+  const products = await getProductsWithContent();
   const featured = products.slice(0, 4);
 
   return (

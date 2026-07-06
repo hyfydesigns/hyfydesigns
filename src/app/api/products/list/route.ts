@@ -11,6 +11,7 @@ export async function GET() {
     thumbnail: p.images[0] ?? null,
     type: p.type,
     priceDisplay: p.priceDisplay,
+    colors: p.colors,
   }));
   return NextResponse.json(list);
 }
