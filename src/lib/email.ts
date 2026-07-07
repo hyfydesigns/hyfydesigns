@@ -52,6 +52,7 @@ export async function subscribeToNewsletter(
     return { ok: true, mocked: true };
   }
 
+  let audienceContactCreated = false;
   if (audienceId) {
     try {
       await resend.contacts.create({
@@ -59,20 +60,38 @@ export async function subscribeToNewsletter(
         audienceId,
         unsubscribed: false,
       });
+      audienceContactCreated = true;
     } catch (err) {
       // Duplicate contact is fine — swallow and continue to welcome email.
       const msg = (err as Error).message ?? "";
-      if (!/already exists|duplicate/i.test(msg)) {
+      if (/already exists|duplicate/i.test(msg)) {
+        audienceContactCreated = true;
+      } else {
         console.warn("[resend contacts.create]", msg);
       }
     }
   }
 
+  // When the subscriber is in a Resend audience, Resend substitutes
+  // {{{RESEND_UNSUBSCRIBE_URL}}} with a one-click unsubscribe link tied
+  // to that audience. If they aren't (no audienceId configured), we fall
+  // back to a mailto that lands in the studio inbox.
+  const useResendLink = audienceContactCreated && Boolean(audienceId);
+  const unsubscribeUrl = useResendLink
+    ? "{{{RESEND_UNSUBSCRIBE_URL}}}"
+    : `mailto:${emailTo}?subject=${encodeURIComponent("Unsubscribe me")}`;
+
   const welcome = await resend.emails.send({
     from: emailFrom,
     to: [email],
     subject: "Welcome to HyFy Designs",
-    html: welcomeHtml(),
+    html: welcomeHtml(unsubscribeUrl),
+    // List-Unsubscribe headers let inbox providers (Gmail, Outlook, etc.)
+    // show a native one-click unsubscribe button in the message header.
+    headers: {
+      "List-Unsubscribe": `<${unsubscribeUrl}>`,
+      "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+    },
   });
   if (welcome.error) {
     console.error("[resend] welcome email failed:", welcome.error);
@@ -81,7 +100,7 @@ export async function subscribeToNewsletter(
   return { ok: true };
 }
 
-function welcomeHtml(): string {
+function welcomeHtml(unsubscribeUrl: string): string {
   return `
     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 560px; margin: 0 auto; padding: 24px; color: #0A0A0A;">
       <h1 style="font-size: 24px; color: #0A2A6E; margin: 0 0 12px;">
@@ -96,8 +115,10 @@ function welcomeHtml(): string {
         Houston, TX
       </p>
       <hr style="border: none; border-top: 1px solid #E6EEFB; margin: 24px 0;" />
-      <p style="font-size: 12px; color: #6B6B67;">
-        If you didn't sign up for this, just reply and let us know — we'll take you off the list.
+      <p style="font-size: 12px; color: #6B6B67; line-height: 1.55;">
+        Changed your mind? You can
+        <a href="${unsubscribeUrl}" style="color: #0A2A6E;">unsubscribe here</a>
+        anytime — no hard feelings.
       </p>
     </div>
   `;
