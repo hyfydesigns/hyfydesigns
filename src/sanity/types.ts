@@ -34,6 +34,19 @@ export type ContactPageDoc = {
   subjects?: string[];
 };
 
+export type EmailTemplate = {
+  subject?: string;
+  heading?: string;
+  body?: string;
+  signoff?: string;
+};
+
+export type EmailSettingsDoc = {
+  welcome?: EmailTemplate;
+  contactResponse?: EmailTemplate;
+  quoteResponse?: EmailTemplate;
+};
+
 export type LifestylePhotoDoc = {
   _id: string;
   location: string;

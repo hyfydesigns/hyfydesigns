@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
-import { escapeHtml, sendStudioNotification } from "@/lib/email";
+import {
+  escapeHtml,
+  sendContactAutoResponse,
+  sendStudioNotification,
+} from "@/lib/email";
 
 export async function POST(req: Request) {
   const form = await req.formData();
@@ -30,11 +34,14 @@ export async function POST(req: Request) {
     </div>
   `;
 
-  await sendStudioNotification({
-    subject: `Contact: ${subject || `Message from ${name}`}`,
-    html,
-    replyTo: email,
-  });
+  await Promise.all([
+    sendStudioNotification({
+      subject: `Contact: ${subject || `Message from ${name}`}`,
+      html,
+      replyTo: email,
+    }),
+    sendContactAutoResponse(email, name),
+  ]);
 
   return NextResponse.json({ ok: true });
 }

@@ -27,6 +27,13 @@ export default defineConfig({
                   .schemaType("contactPage")
                   .documentId("contactPage"),
               ),
+            S.listItem()
+              .title("Email templates")
+              .child(
+                S.document()
+                  .schemaType("emailSettings")
+                  .documentId("emailSettings"),
+              ),
             S.divider(),
             S.documentTypeListItem("collection").title("Collections"),
             S.documentTypeListItem("productContent").title("Product content"),

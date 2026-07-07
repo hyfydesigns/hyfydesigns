@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
-import { escapeHtml, sendStudioNotification } from "@/lib/email";
+import {
+  escapeHtml,
+  sendQuoteAutoResponse,
+  sendStudioNotification,
+} from "@/lib/email";
 
 // Cap total attachment payload to stay well under Resend's 40MB email limit.
 const MAX_ATTACHMENT_BYTES = 20 * 1024 * 1024;
@@ -67,12 +71,15 @@ export async function POST(req: Request) {
     </div>
   `;
 
-  await sendStudioNotification({
-    subject: `Quote request: ${type || "Custom project"}${quantity ? ` (${quantity})` : ""}`,
-    html,
-    replyTo: email,
-    attachments,
-  });
+  await Promise.all([
+    sendStudioNotification({
+      subject: `Quote request: ${type || "Custom project"}${quantity ? ` (${quantity})` : ""}`,
+      html,
+      replyTo: email,
+      attachments,
+    }),
+    sendQuoteAutoResponse(email, name),
+  ]);
 
   return NextResponse.json({ ok: true });
 }

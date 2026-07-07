@@ -2,6 +2,8 @@ import type { SchemaTypeDefinition } from "sanity";
 import { homeHero } from "./home-hero";
 import { heroSlide } from "./hero-slide";
 import { contactPage } from "./contact-page";
+import { emailTemplate } from "./email-template";
+import { emailSettings } from "./email-settings";
 import { lifestylePhoto } from "./lifestyle-photo";
 import { portfolioProject } from "./portfolio-project";
 import { testimonial } from "./testimonial";
@@ -12,6 +14,8 @@ export const schemaTypes: SchemaTypeDefinition[] = [
   homeHero,
   heroSlide,
   contactPage,
+  emailSettings,
+  emailTemplate,
   collection,
   productContent,
   lifestylePhoto,

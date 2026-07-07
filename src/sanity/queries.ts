@@ -20,6 +20,12 @@ export const CONTACT_PAGE_QUERY = groq`
   }
 `;
 
+export const EMAIL_SETTINGS_QUERY = groq`
+  *[_type == "emailSettings"][0]{
+    welcome, contactResponse, quoteResponse
+  }
+`;
+
 export const LIFESTYLE_PHOTOS_QUERY = groq`
   *[_type == "lifestylePhoto"] | order(order asc){
     _id, location, caption, aspect,
