@@ -2,14 +2,34 @@ import { NextResponse } from "next/server";
 import { subscribeToNewsletter } from "@/lib/email";
 
 export async function POST(req: Request) {
-  const form = await req.formData();
-  const email = String(form.get("email") ?? "")
-    .trim()
-    .toLowerCase();
-
-  if (email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    await subscribeToNewsletter(email);
+  let email = "";
+  const contentType = req.headers.get("content-type") ?? "";
+  try {
+    if (contentType.includes("application/json")) {
+      const body = (await req.json()) as { email?: string };
+      email = String(body.email ?? "").trim().toLowerCase();
+    } else {
+      const form = await req.formData();
+      email = String(form.get("email") ?? "").trim().toLowerCase();
+    }
+  } catch {
+    return NextResponse.json({ error: "Invalid request." }, { status: 400 });
   }
 
-  return NextResponse.redirect(new URL("/?subscribed=1", req.url), 303);
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return NextResponse.json(
+      { error: "Enter a valid email address." },
+      { status: 400 },
+    );
+  }
+
+  const result = await subscribeToNewsletter(email);
+  if (!result.ok && !result.mocked) {
+    return NextResponse.json(
+      { error: "We couldn't sign you up right now. Try again in a moment." },
+      { status: 502 },
+    );
+  }
+
+  return NextResponse.json({ ok: true });
 }

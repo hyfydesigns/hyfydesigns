@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Mail, Phone, MapPin } from "lucide-react";
 import { Container } from "@/components/ui/container";
+import { NewsletterForm } from "@/components/newsletter/newsletter-form";
 import { site } from "@/lib/site";
 
 function InstagramGlyph() {
@@ -69,32 +70,12 @@ export function Footer() {
             <p className="mt-3 text-sm text-cream/75 leading-relaxed max-w-sm">
               {site.tagline}
             </p>
-            <form
-              action="/api/newsletter"
-              method="post"
-              className="mt-6 max-w-sm"
-              aria-label="Subscribe to the newsletter"
-            >
-              <label htmlFor="email" className="block text-xs uppercase tracking-wider text-cream/60 mb-2">
+            <div className="mt-6 max-w-sm">
+              <p className="block text-xs uppercase tracking-wider text-cream/60 mb-2">
                 New drops in your inbox
-              </label>
-              <div className="flex gap-2">
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  required
-                  placeholder="you@studio.com"
-                  className="flex-1 min-h-11 rounded-lg bg-cream/10 border border-cream/20 text-cream placeholder:text-cream/50 px-3 text-sm focus:outline-none focus:border-red"
-                />
-                <button
-                  type="submit"
-                  className="min-h-11 px-4 rounded-lg bg-red text-cream text-sm font-medium hover:bg-red-deep tap"
-                >
-                  Join
-                </button>
-              </div>
-            </form>
+              </p>
+              <NewsletterForm tone="dark" ctaLabel="Join" />
+            </div>
           </div>
 
           {groups.map((group) => (
