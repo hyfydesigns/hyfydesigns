@@ -4,6 +4,9 @@ import { NavBar } from "@/components/layout/nav-bar";
 import { Footer } from "@/components/layout/footer";
 import { LegalLayout } from "@/components/legal/legal-layout";
 import { site } from "@/lib/site";
+import { sanityFetch } from "@/sanity/client";
+import { CONTACT_PAGE_QUERY } from "@/sanity/queries";
+import type { ContactPageDoc } from "@/sanity/types";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
@@ -13,7 +16,16 @@ export const metadata: Metadata = {
 
 const EFFECTIVE_DATE = "July 2, 2026";
 
-export default function PrivacyPage() {
+export default async function PrivacyPage() {
+  const cms = await sanityFetch<ContactPageDoc | null>(
+    CONTACT_PAGE_QUERY,
+    {},
+    null,
+  );
+  const email = cms?.studioEmail?.trim() || site.address.email;
+  const phone = cms?.studioPhone?.trim() || site.address.phone;
+  const address = cms?.studioAddress?.trim() || site.address.line1;
+
   return (
     <>
       <NavBar />
@@ -235,8 +247,8 @@ export default function PrivacyPage() {
           </ul>
           <p>
             To exercise any of these rights, email us at{" "}
-            <a href={`mailto:${site.address.email}`}>{site.address.email}</a>.
-            We will respond within 30 days.
+            <a href={`mailto:${email}`}>{email}</a>. We will respond within
+            30 days.
           </p>
 
           <h2>6. Cookies</h2>
@@ -302,11 +314,13 @@ export default function PrivacyPage() {
           </p>
           <ul>
             <li>
-              Email:{" "}
-              <a href={`mailto:${site.address.email}`}>{site.address.email}</a>
+              Email: <a href={`mailto:${email}`}>{email}</a>
             </li>
-            <li>Phone: {site.address.phone}</li>
-            <li>Address: {site.address.line1}</li>
+            <li>Phone: {phone}</li>
+            <li>
+              Address:{" "}
+              <span className="whitespace-pre-line">{address}</span>
+            </li>
           </ul>
 
           <p className="mt-8">
