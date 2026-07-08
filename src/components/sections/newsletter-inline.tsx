@@ -10,7 +10,8 @@ export function NewsletterInline() {
             Drops land first Friday of every month.
           </h2>
           <p className="mt-2 text-cream/70 text-sm sm:text-base max-w-md mx-auto">
-            One email. New tees, studio picks, and a monthly Houston playlist.
+            One email. New tees, studio picks, and fresh design inspiration
+            from the HyFy studio.
           </p>
           <div className="mt-6 max-w-md mx-auto text-left sm:text-center">
             <NewsletterForm tone="dark" ctaLabel="Sign me up" />
