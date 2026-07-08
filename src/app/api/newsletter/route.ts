@@ -23,7 +23,8 @@ export async function POST(req: Request) {
     );
   }
 
-  const result = await subscribeToNewsletter(email);
+  const origin = new URL(req.url).origin;
+  const result = await subscribeToNewsletter(email, origin);
   if (!result.ok && !result.mocked) {
     return NextResponse.json(
       { error: "We couldn't sign you up right now. Try again in a moment." },

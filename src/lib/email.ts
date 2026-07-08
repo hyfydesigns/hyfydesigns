@@ -1,4 +1,5 @@
 // Server-only Resend helpers. Do not import from client components.
+import { createHmac } from "crypto";
 import { Resend } from "resend";
 import { sanityFetch } from "@/sanity/client";
 import { EMAIL_SETTINGS_QUERY } from "@/sanity/queries";
@@ -54,6 +55,7 @@ export async function sendStudioNotification(
 
 export async function subscribeToNewsletter(
   email: string,
+  origin: string,
   name?: string,
 ): Promise<{ ok: boolean; mocked?: boolean; error?: string }> {
   if (!resend) {
@@ -61,7 +63,6 @@ export async function subscribeToNewsletter(
     return { ok: true, mocked: true };
   }
 
-  let audienceContactCreated = false;
   if (audienceId) {
     try {
       await resend.contacts.create({
@@ -69,21 +70,19 @@ export async function subscribeToNewsletter(
         audienceId,
         unsubscribed: false,
       });
-      audienceContactCreated = true;
     } catch (err) {
       const msg = (err as Error).message ?? "";
-      if (/already exists|duplicate/i.test(msg)) {
-        audienceContactCreated = true;
-      } else {
+      if (!/already exists|duplicate/i.test(msg)) {
         console.warn("[resend contacts.create]", msg);
       }
     }
   }
 
-  const useResendLink = audienceContactCreated && Boolean(audienceId);
-  const unsubscribeUrl = useResendLink
-    ? "{{{RESEND_UNSUBSCRIBE_URL}}}"
-    : `mailto:${emailTo}?subject=${encodeURIComponent("Unsubscribe me")}`;
+  // Build a signed unsubscribe URL that points at our own page + endpoint.
+  // Resend's {{{RESEND_UNSUBSCRIBE_URL}}} variable only works for broadcasts,
+  // not for transactional emails.send() calls.
+  const pageUrl = buildUnsubscribeUrl(email, origin, "page");
+  const apiUrl = buildUnsubscribeUrl(email, origin, "api");
 
   const settings = await getEmailSettings();
   const rendered = renderTemplate(
@@ -91,8 +90,9 @@ export async function subscribeToNewsletter(
     DEFAULT_WELCOME,
     { name, email },
     {
-      unsubscribeUrl,
-      unsubscribeLabel: "Changed your mind? Unsubscribe here — no hard feelings.",
+      unsubscribeUrl: pageUrl,
+      unsubscribeLabel:
+        "Changed your mind? Unsubscribe here — no hard feelings.",
     },
   );
 
@@ -101,8 +101,11 @@ export async function subscribeToNewsletter(
     to: [email],
     subject: rendered.subject,
     html: rendered.html,
+    // Native one-click unsubscribe button in Gmail/Outlook. The API URL
+    // accepts POST and marks the contact unsubscribed without any user
+    // interaction beyond clicking the button.
     headers: {
-      "List-Unsubscribe": `<${unsubscribeUrl}>`,
+      "List-Unsubscribe": `<${apiUrl}>`,
       "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
     },
   });
@@ -111,6 +114,72 @@ export async function subscribeToNewsletter(
     return { ok: false, error: send.error.message };
   }
   return { ok: true };
+}
+
+// -----------------------------------------------------------------
+// Unsubscribe: signed tokens + Resend contact update
+// -----------------------------------------------------------------
+
+const UNSUBSCRIBE_SECRET =
+  process.env.UNSUBSCRIBE_SECRET || "hyfy-designs-unsubscribe";
+
+function signUnsubscribe(email: string): string {
+  return createHmac("sha256", UNSUBSCRIBE_SECRET)
+    .update(email.toLowerCase())
+    .digest("hex")
+    .slice(0, 32);
+}
+
+function verifyUnsubscribe(email: string, token: string): boolean {
+  if (!email || !token) return false;
+  const expected = signUnsubscribe(email);
+  return timingSafeEqualStr(expected, token);
+}
+
+function timingSafeEqualStr(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let result = 0;
+  for (let i = 0; i < a.length; i++) {
+    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return result === 0;
+}
+
+function buildUnsubscribeUrl(
+  email: string,
+  origin: string,
+  target: "page" | "api",
+): string {
+  const token = signUnsubscribe(email);
+  const path =
+    target === "api" ? "/api/newsletter/unsubscribe" : "/unsubscribe";
+  const params = new URLSearchParams({ email, token });
+  return `${origin}${path}?${params.toString()}`;
+}
+
+export async function unsubscribeFromNewsletter(
+  email: string,
+  token: string,
+): Promise<{ ok: boolean; reason?: "invalid" | "not_configured" | "failed" }> {
+  if (!verifyUnsubscribe(email, token)) {
+    return { ok: false, reason: "invalid" };
+  }
+  if (!resend || !audienceId) {
+    // No audience means we never created a contact, so there's nothing to
+    // flip. Treat as success from the customer's perspective.
+    return { ok: true };
+  }
+  try {
+    await resend.contacts.update({
+      email,
+      audienceId,
+      unsubscribed: true,
+    });
+    return { ok: true };
+  } catch (err) {
+    console.error("[resend] unsubscribe update failed:", err);
+    return { ok: false, reason: "failed" };
+  }
 }
 
 // -----------------------------------------------------------------
