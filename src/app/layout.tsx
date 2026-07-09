@@ -36,6 +36,10 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
+const googleVerification =
+  process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION ??
+  process.env.GOOGLE_SITE_VERIFICATION;
+
 export const metadata: Metadata = {
   title: {
     default: "HyFy Designs — Custom apparel and merch in Houston",
@@ -53,6 +57,7 @@ export const metadata: Metadata = {
     siteName: "HyFy Designs",
   },
   twitter: { card: "summary_large_image" },
+  verification: googleVerification ? { google: googleVerification } : undefined,
 };
 
 export default function RootLayout({
