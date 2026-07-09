@@ -10,6 +10,7 @@ export type PrintfulVariant = {
 };
 
 export type PrintfulProduct = {
+  id: string; // stable short id (Printful sync_product id) — use for external feeds like Google Merchant
   slug: string;
   name: string;
   type: "t-shirt" | "mug" | "sticker" | "hoodie" | "hat" | "engraving";
@@ -274,6 +275,7 @@ function mapDetail(
   }
 
   return {
+    id: String(d.sync_product.id),
     slug,
     name,
     type,
@@ -364,6 +366,7 @@ export function toCardProduct(p: PrintfulProduct): Product {
 
 const mockProducts: PrintfulProduct[] = [
   {
+    id: "mock-1",
     slug: "bayou-city-tee",
     name: "Bayou City tee",
     type: "t-shirt",
@@ -383,6 +386,7 @@ const mockProducts: PrintfulProduct[] = [
     priceDisplay: "$28",
   },
   {
+    id: "mock-2",
     slug: "studio-mug",
     name: "Studio mug",
     type: "mug",
@@ -400,6 +404,7 @@ const mockProducts: PrintfulProduct[] = [
     priceDisplay: "$16",
   },
   {
+    id: "mock-3",
     slug: "sticker-pack",
     name: "Sticker pack",
     type: "sticker",
@@ -413,6 +418,7 @@ const mockProducts: PrintfulProduct[] = [
     priceDisplay: "$9",
   },
   {
+    id: "mock-4",
     slug: "custom-engraving",
     name: "Custom engraving",
     type: "engraving",
@@ -426,6 +432,7 @@ const mockProducts: PrintfulProduct[] = [
     priceDisplay: "Quote",
   },
   {
+    id: "mock-5",
     slug: "montrose-hoodie",
     name: "Montrose hoodie",
     type: "hoodie",
@@ -442,6 +449,7 @@ const mockProducts: PrintfulProduct[] = [
     priceDisplay: "$54",
   },
   {
+    id: "mock-6",
     slug: "heights-cap",
     name: "Heights cap",
     type: "hat",

@@ -55,7 +55,7 @@ function itemXml(p: PrintfulProduct): string {
   );
 
   return `    <item>
-      <g:id>${escapeXml(p.slug)}</g:id>
+      <g:id>${escapeXml(p.id)}</g:id>
       <title>${escapeXml(truncate(p.name, 150))}</title>
       <description>${escapeXml(description)}</description>
       <link>${escapeXml(link)}</link>
