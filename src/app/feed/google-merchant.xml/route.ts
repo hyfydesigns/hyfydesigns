@@ -5,6 +5,12 @@ export const revalidate = 3600;
 
 const BASE = "https://hyfydesigns.com";
 
+// Representative flat estimate for Merchant Center listings. Actual
+// checkout always shows the real, live Printful-calculated rate — this
+// value only needs to be reasonable, not exact, per Google's shipping
+// requirements. Matches the low end of the /checkout shipping tiers.
+const SHIPPING_ESTIMATE_USD = 4.99;
+
 // Google's official taxonomy IDs — https://support.google.com/merchants/answer/6324436
 const GOOGLE_CATEGORY: Record<PrintfulProduct["type"], string> = {
   "t-shirt": "Apparel & Accessories > Clothing > Shirts & Tops",
@@ -68,6 +74,11 @@ ${additionalImages.map((img) => `      <g:additional_image_link>${escapeXml(img)
       <g:google_product_category>${escapeXml(category)}</g:google_product_category>
       <g:product_type>${escapeXml(p.category)}</g:product_type>
       <g:identifier_exists>no</g:identifier_exists>
+      <g:shipping>
+        <g:country>US</g:country>
+        <g:service>Standard</g:service>
+        <g:price>${SHIPPING_ESTIMATE_USD.toFixed(2)} USD</g:price>
+      </g:shipping>
     </item>`;
 }
 
