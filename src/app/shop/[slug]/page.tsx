@@ -32,19 +32,51 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const product = await getProduct(slug);
-  if (!product) return { title: "Not found" };
+  const rawProduct = await getProduct(slug);
+  if (!rawProduct) return { title: "Not found" };
   const content = await sanityFetch<ProductContentDoc | null>(
     PRODUCT_CONTENT_QUERY,
     { slug },
     null,
   );
-  const description = descriptionForMeta(content, product.description);
+  const product = applyFeaturedColor(rawProduct, content?.featuredColor);
+  const description = truncateForSnippet(
+    descriptionForMeta(content, product.description),
+  );
+  const canonicalPath = `/shop/${slug}`;
+  const ogImages = product.images.slice(0, 4).map((url) => ({
+    url,
+    alt: product.name,
+  }));
   return {
     title: product.name,
     description,
-    openGraph: { title: product.name, description },
+    alternates: { canonical: canonicalPath },
+    openGraph: {
+      type: "website",
+      title: product.name,
+      description,
+      url: canonicalPath,
+      siteName: "HyFy Designs",
+      images: ogImages,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: product.name,
+      description,
+      images: ogImages.map((i) => i.url),
+    },
   };
+}
+
+// Google shows about 155 characters of the meta description. Cut on a word
+// boundary and add an ellipsis if we chop mid-thought.
+function truncateForSnippet(text: string, max = 155): string {
+  const t = text.trim();
+  if (t.length <= max) return t;
+  const cut = t.slice(0, max);
+  const lastSpace = cut.lastIndexOf(" ");
+  return `${cut.slice(0, lastSpace > 0 ? lastSpace : max).trim()}…`;
 }
 
 function descriptionForMeta(
@@ -104,17 +136,54 @@ export default async function ProductPage({
     product.description ||
     product.name;
 
-  const jsonLd = {
+  const productUrl = `https://hyfydesigns.com/shop/${slug}`;
+  const variantPrices = product.variants.map((v) => v.price).filter((p) => p > 0);
+  const lowPrice = variantPrices.length ? Math.min(...variantPrices) : 0;
+  const highPrice = variantPrices.length ? Math.max(...variantPrices) : 0;
+  const hasVariantRange = variantPrices.length > 1 && lowPrice !== highPrice;
+
+  const productJsonLd = {
     "@context": "https://schema.org/",
     "@type": "Product",
     name: product.name,
-    description: jsonLdDescription,
-    offers: {
-      "@type": "Offer",
-      priceCurrency: "USD",
-      price: product.variants[0]?.price ?? 0,
-      availability: "https://schema.org/InStock",
+    description: truncateForSnippet(jsonLdDescription, 500),
+    sku: product.slug,
+    productID: product.slug,
+    image: product.images.slice(0, 6),
+    category: product.category,
+    brand: {
+      "@type": "Brand",
+      name: "HyFy Designs",
     },
+    offers: hasVariantRange
+      ? {
+          "@type": "AggregateOffer",
+          priceCurrency: "USD",
+          lowPrice,
+          highPrice,
+          offerCount: product.variants.length,
+          availability: "https://schema.org/InStock",
+          url: productUrl,
+          itemCondition: "https://schema.org/NewCondition",
+        }
+      : {
+          "@type": "Offer",
+          priceCurrency: "USD",
+          price: lowPrice,
+          availability: "https://schema.org/InStock",
+          url: productUrl,
+          itemCondition: "https://schema.org/NewCondition",
+        },
+  };
+
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org/",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://hyfydesigns.com/" },
+      { "@type": "ListItem", position: 2, name: "Shop", item: "https://hyfydesigns.com/shop" },
+      { "@type": "ListItem", position: 3, name: product.name, item: productUrl },
+    ],
   };
 
   return (
@@ -225,7 +294,11 @@ export default async function ProductPage({
       <Footer />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
     </>
   );
