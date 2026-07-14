@@ -9,10 +9,29 @@ import { FilterSidebar } from "@/components/shop/filter-sidebar";
 import { toCardProduct, type PrintfulProduct } from "@/lib/printful";
 import { getProductsWithContent } from "@/lib/products";
 
+const SHOP_DESCRIPTION =
+  "Custom apparel and merchandise from HyFy Designs. T-shirts, hoodies, mugs, stickers, and more. Printed on demand in Houston, shipped nationwide.";
+
 export const metadata: Metadata = {
   title: "Shop",
-  description:
-    "Custom apparel and merchandise from HyFy Designs. T-shirts, hoodies, mugs, stickers, and more. Printed in Houston.",
+  description: SHOP_DESCRIPTION,
+  // Filter query params (?type=, ?color=, ?category=) create many crawlable
+  // URL variants of the same catalog. Canonical keeps all their SEO credit
+  // consolidated on the plain /shop URL instead of splitting it across
+  // near-duplicate pages.
+  alternates: { canonical: "/shop" },
+  openGraph: {
+    type: "website",
+    title: "Shop — HyFy Designs",
+    description: SHOP_DESCRIPTION,
+    url: "/shop",
+    siteName: "HyFy Designs",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Shop — HyFy Designs",
+    description: SHOP_DESCRIPTION,
+  },
 };
 
 export default async function ShopPage({
@@ -23,6 +42,23 @@ export default async function ShopPage({
   const sp = await searchParams;
   const all = await getProductsWithContent();
   const filtered = applyFilters(all, sp);
+
+  const itemListJsonLd = {
+    "@context": "https://schema.org/",
+    "@type": "CollectionPage",
+    name: "Shop — HyFy Designs",
+    description: SHOP_DESCRIPTION,
+    url: "https://hyfydesigns.com/shop",
+    mainEntity: {
+      "@type": "ItemList",
+      itemListElement: all.slice(0, 24).map((p, i) => ({
+        "@type": "ListItem",
+        position: i + 1,
+        url: `https://hyfydesigns.com/shop/${p.slug}`,
+        name: p.name,
+      })),
+    },
+  };
 
   return (
     <>
@@ -74,6 +110,10 @@ export default async function ShopPage({
         </Container>
       </main>
       <Footer />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListJsonLd) }}
+      />
     </>
   );
 }
