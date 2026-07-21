@@ -27,7 +27,16 @@ export const collection = defineType({
       name: "featured",
       type: "boolean",
       initialValue: true,
-      description: "Show in the Shop dropdown in the main nav.",
+      description:
+        "Show in the Shop dropdown in the main nav and in the collections strip on the Shop page.",
+    }),
+    defineField({
+      name: "highlightImage",
+      title: "Highlight image",
+      type: "image",
+      options: { hotspot: true },
+      description:
+        "Shown on the Shop page collections strip. Leave blank to automatically use the first product's mockup instead.",
     }),
     defineField({
       name: "order",

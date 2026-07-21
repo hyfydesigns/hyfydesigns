@@ -62,6 +62,13 @@ export const ALL_COLLECTION_SLUGS_QUERY = groq`
   *[_type == "collection" && defined(slug.current)]{ "slug": slug.current }
 `;
 
+export const SHOP_COLLECTIONS_STRIP_QUERY = groq`
+  *[_type == "collection" && featured == true] | order(order asc, title asc){
+    _id, title, "slug": slug.current, highlightImage,
+    "firstProductSlug": productSlugs[0]
+  }
+`;
+
 export const PRODUCT_CONTENT_QUERY = groq`
   *[_type == "productContent" && slug == $slug][0]{
     slug, htmlDescription, description, featuredColor, sizingNote, careNote

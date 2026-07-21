@@ -87,6 +87,14 @@ export type CollectionDoc = {
   productSlugs?: string[];
 };
 
+export type CollectionStripItem = {
+  _id: string;
+  title: string;
+  slug: string;
+  highlightImage?: SanityImage;
+  firstProductSlug?: string;
+};
+
 // PortableTextBlock — kept loose to avoid pulling the @portabletext/react
 // types into this shared module; the renderer casts as needed.
 export type ProductContentDoc = {

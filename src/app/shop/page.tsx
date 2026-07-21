@@ -6,8 +6,16 @@ import { Footer } from "@/components/layout/footer";
 import { Container } from "@/components/ui/container";
 import { ProductCard } from "@/components/ui/product-card";
 import { FilterSidebar } from "@/components/shop/filter-sidebar";
+import {
+  CollectionsStrip,
+  type CollectionStripCard,
+} from "@/components/shop/collections-strip";
 import { toCardProduct, type PrintfulProduct } from "@/lib/printful";
 import { getProductsWithContent } from "@/lib/products";
+import { sanityFetch } from "@/sanity/client";
+import { SHOP_COLLECTIONS_STRIP_QUERY } from "@/sanity/queries";
+import { urlFor } from "@/sanity/image";
+import type { CollectionStripItem } from "@/sanity/types";
 
 const SHOP_DESCRIPTION =
   "Custom apparel and merchandise from HyFy Designs. T-shirts, hoodies, mugs, stickers, and more. Printed on demand in Houston, shipped nationwide.";
@@ -40,8 +48,20 @@ export default async function ShopPage({
   searchParams: Promise<Record<string, string | string[]>>;
 }) {
   const sp = await searchParams;
-  const all = await getProductsWithContent();
+  const [all, collections] = await Promise.all([
+    getProductsWithContent(),
+    sanityFetch<CollectionStripItem[]>(SHOP_COLLECTIONS_STRIP_QUERY, {}, []),
+  ]);
   const filtered = applyFilters(all, sp);
+
+  const productBySlug = new Map(all.map((p) => [p.slug, p]));
+  const collectionCards: CollectionStripCard[] = collections.map((c) => {
+    const image = c.highlightImage
+      ? urlFor(c.highlightImage).width(440).height(440).url()
+      : (c.firstProductSlug && productBySlug.get(c.firstProductSlug)?.images[0]) ||
+        null;
+    return { slug: c.slug, title: c.title, image };
+  });
 
   const itemListJsonLd = {
     "@context": "https://schema.org/",
@@ -76,6 +96,17 @@ export default async function ShopPage({
             </div>
           </Container>
         </section>
+
+        {collectionCards.length > 0 && (
+          <section className="py-8 sm:py-10 border-b border-hairline">
+            <Container>
+              <h2 className="text-xl sm:text-2xl mb-4 sm:mb-5">
+                Shop by collection
+              </h2>
+              <CollectionsStrip items={collectionCards} />
+            </Container>
+          </section>
+        )}
 
         <Container>
           <div className="py-8 grid gap-8 lg:grid-cols-[240px_1fr]">
