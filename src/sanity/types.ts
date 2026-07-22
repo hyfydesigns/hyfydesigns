@@ -5,6 +5,12 @@ export type SanityImage = {
   crop?: { top: number; bottom: number; left: number; right: number };
 };
 
+export type SeoSettingsDoc = {
+  siteTitle?: string;
+  siteDescription?: string;
+  ogImage?: SanityImage;
+};
+
 export type HomeHeroDoc = {
   eyebrow?: string;
   headline?: string;

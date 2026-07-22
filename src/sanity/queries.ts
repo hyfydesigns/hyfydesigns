@@ -1,5 +1,11 @@
 import { groq } from "next-sanity";
 
+export const SEO_SETTINGS_QUERY = groq`
+  *[_type == "seoSettings"][0]{
+    siteTitle, siteDescription, ogImage
+  }
+`;
+
 export const HOME_HERO_QUERY = groq`
   *[_type == "homeHero"][0]{
     eyebrow, headline, sub, primaryCta, secondaryCta

@@ -17,6 +17,13 @@ export default defineConfig({
           .title("Content")
           .items([
             S.listItem()
+              .title("Site & sharing")
+              .child(
+                S.document()
+                  .schemaType("seoSettings")
+                  .documentId("seoSettings"),
+              ),
+            S.listItem()
               .title("Home hero")
               .child(S.document().schemaType("homeHero").documentId("homeHero")),
             S.documentTypeListItem("heroSlide").title("Hero slides"),
