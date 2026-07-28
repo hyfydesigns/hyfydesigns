@@ -1,20 +1,20 @@
 import { NextResponse } from "next/server";
 import { subscribeToNewsletter } from "@/lib/email";
+import { isLikelyBot } from "@/lib/spam-guard";
 
 export async function POST(req: Request) {
-  let email = "";
-  const contentType = req.headers.get("content-type") ?? "";
+  let form: FormData;
   try {
-    if (contentType.includes("application/json")) {
-      const body = (await req.json()) as { email?: string };
-      email = String(body.email ?? "").trim().toLowerCase();
-    } else {
-      const form = await req.formData();
-      email = String(form.get("email") ?? "").trim().toLowerCase();
-    }
+    form = await req.formData();
   } catch {
     return NextResponse.json({ error: "Invalid request." }, { status: 400 });
   }
+
+  if (isLikelyBot(form)) {
+    return NextResponse.json({ ok: true });
+  }
+
+  const email = String(form.get("email") ?? "").trim().toLowerCase();
 
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return NextResponse.json(

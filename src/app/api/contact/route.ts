@@ -4,9 +4,17 @@ import {
   sendContactAutoResponse,
   sendStudioNotification,
 } from "@/lib/email";
+import { isLikelyBot } from "@/lib/spam-guard";
 
 export async function POST(req: Request) {
   const form = await req.formData();
+
+  if (isLikelyBot(form)) {
+    // Fake success — no error, no email sent. Bots that see a rejection
+    // learn what to fix; bots that see "ok" don't bother adapting.
+    return NextResponse.json({ ok: true });
+  }
+
   const name = String(form.get("name") ?? "").trim();
   const email = String(form.get("email") ?? "").trim();
   const subject = String(form.get("subject") ?? "").trim();

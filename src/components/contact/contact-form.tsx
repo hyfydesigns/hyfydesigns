@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Check } from "lucide-react";
+import { SpamGuardFields } from "@/components/forms/spam-guard-fields";
 
 const DEFAULT_SUBJECTS = [
   "General question",
@@ -44,6 +45,7 @@ export function ContactForm({ subjects }: { subjects?: string[] }) {
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
+      <SpamGuardFields />
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block">
           <span className="block text-xs uppercase tracking-wider text-ink-400 mb-1.5">

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Check, AlertCircle } from "lucide-react";
 import { trackEvent } from "@/components/analytics/posthog-provider";
+import { SpamGuardFields } from "@/components/forms/spam-guard-fields";
 import { cn } from "@/lib/cn";
 
 type Status = "idle" | "submitting" | "success" | "error";
@@ -52,8 +53,7 @@ export function NewsletterForm({
     setStatus("submitting");
     setErrorMsg(null);
     try {
-      const formData = new FormData();
-      formData.append("email", email);
+      const formData = new FormData(e.currentTarget);
       const res = await fetch("/api/newsletter", {
         method: "POST",
         headers: { Accept: "application/json" },
@@ -90,12 +90,14 @@ export function NewsletterForm({
 
   return (
     <form onSubmit={onSubmit} className={cn("space-y-2", className)}>
+      <SpamGuardFields />
       <div className="flex flex-col sm:flex-row gap-2">
         <label htmlFor="newsletter-email" className="sr-only">
           Email address
         </label>
         <input
           id="newsletter-email"
+          name="email"
           type="email"
           required
           value={email}

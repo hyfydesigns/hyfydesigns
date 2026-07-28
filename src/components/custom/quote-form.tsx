@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { UploadCloud, Check, FileText, X } from "lucide-react";
 import { trackEvent } from "@/components/analytics/posthog-provider";
+import { SpamGuardFields } from "@/components/forms/spam-guard-fields";
 import { cn } from "@/lib/cn";
 
 const projectTypes = [
@@ -66,6 +67,7 @@ export function QuoteForm() {
 
   return (
     <form onSubmit={onSubmit} className="space-y-5">
+      <SpamGuardFields />
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Your name" required>
           <input

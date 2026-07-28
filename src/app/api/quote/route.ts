@@ -4,12 +4,19 @@ import {
   sendQuoteAutoResponse,
   sendStudioNotification,
 } from "@/lib/email";
+import { isLikelyBot } from "@/lib/spam-guard";
 
 // Cap total attachment payload to stay well under Resend's 40MB email limit.
 const MAX_ATTACHMENT_BYTES = 20 * 1024 * 1024;
 
 export async function POST(req: Request) {
   const form = await req.formData();
+
+  if (isLikelyBot(form)) {
+    // Fake success, skip before doing any file-buffering work below.
+    return NextResponse.json({ ok: true });
+  }
+
   const name = String(form.get("name") ?? "").trim();
   const email = String(form.get("email") ?? "").trim();
   const type = String(form.get("type") ?? "").trim();
