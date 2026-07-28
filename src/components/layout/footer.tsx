@@ -144,6 +144,9 @@ export function Footer() {
           <Link href="/terms" className="hover:text-cream tap">
             Terms of Service
           </Link>
+          <Link href="/returns" className="hover:text-cream tap">
+            Return policy
+          </Link>
         </div>
       </Container>
     </footer>

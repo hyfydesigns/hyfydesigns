@@ -129,30 +129,11 @@ export default async function TermsPage() {
           <h2>6. Returns and exchanges</h2>
           <p>
             Because every item is printed on demand for you specifically, we
-            do not accept returns or exchanges for buyer&rsquo;s remorse
-            (e.g. the wrong size selected, changed your mind). Please review
-            the size chart and preview mockup before ordering.
-          </p>
-          <p>We will replace or refund items that are:</p>
-          <ul>
-            <li>
-              <strong>Defective</strong> — misprinted, torn, or with
-              manufacturing flaws
-            </li>
-            <li>
-              <strong>Damaged in shipping</strong> — arrived broken or
-              stained through no fault of the customer
-            </li>
-            <li>
-              <strong>Not as ordered</strong> — wrong item, wrong size, or
-              wrong color from what you selected
-            </li>
-          </ul>
-          <p>
-            Contact us at{" "}
-            <a href={`mailto:${email}`}>{email}</a>{" "}
-            within 30 days of delivery with your order number and photos of
-            the issue. We will replace or refund the item at our discretion.
+            do not accept returns or exchanges for buyer&rsquo;s remorse. We
+            do replace or refund items that arrive defective, damaged in
+            shipping, or not as ordered. See our full{" "}
+            <Link href="/returns">Return policy</Link> for what&rsquo;s
+            covered and how to request a replacement.
           </p>
 
           <h2>7. Custom orders</h2>

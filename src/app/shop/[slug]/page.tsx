@@ -275,6 +275,12 @@ export default async function ProductPage({
               <Detail title="Shipping & care">
                 {content?.careNote ??
                   "Ships in 3–5 business days via Printful. Machine wash cold, tumble dry low, do not iron directly on print."}
+                <Link
+                  href="/returns"
+                  className="block mt-2 text-xs text-navy underline hover:text-blue"
+                >
+                  View return policy
+                </Link>
               </Detail>
             </div>
           </section>

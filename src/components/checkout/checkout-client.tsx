@@ -382,6 +382,13 @@ export function CheckoutClient() {
               </span>
             </div>
           </div>
+          <p className="mt-4 pt-4 border-t border-hairline text-xs text-ink-400 text-center">
+            Every piece is printed to order. See our{" "}
+            <Link href="/returns" className="underline hover:text-navy">
+              return policy
+            </Link>
+            .
+          </p>
         </div>
       </aside>
     </div>
