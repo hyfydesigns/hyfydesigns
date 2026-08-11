@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { getProducts } from "@/lib/printful";
+import { getProductsWithContent } from "@/lib/products";
 import { sanityFetch } from "@/sanity/client";
 import { ALL_COLLECTION_SLUGS_QUERY } from "@/sanity/queries";
 
@@ -22,7 +22,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   const [products, collectionSlugs] = await Promise.all([
-    getProducts().catch(() => []),
+    getProductsWithContent().catch(() => []),
     sanityFetch<{ slug: string }[]>(ALL_COLLECTION_SLUGS_QUERY, {}, []),
   ]);
 

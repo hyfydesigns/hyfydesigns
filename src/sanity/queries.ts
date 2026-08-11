@@ -53,23 +53,23 @@ export const TESTIMONIALS_QUERY = groq`
 `;
 
 export const FEATURED_COLLECTIONS_QUERY = groq`
-  *[_type == "collection" && featured == true] | order(order asc, title asc){
+  *[_type == "collection" && featured == true && hidden != true] | order(order asc, title asc){
     _id, title, "slug": slug.current
   }
 `;
 
 export const COLLECTION_QUERY = groq`
-  *[_type == "collection" && slug.current == $slug][0]{
+  *[_type == "collection" && slug.current == $slug && hidden != true][0]{
     _id, title, description, "slug": slug.current, productSlugs
   }
 `;
 
 export const ALL_COLLECTION_SLUGS_QUERY = groq`
-  *[_type == "collection" && defined(slug.current)]{ "slug": slug.current }
+  *[_type == "collection" && defined(slug.current) && hidden != true]{ "slug": slug.current }
 `;
 
 export const SHOP_COLLECTIONS_STRIP_QUERY = groq`
-  *[_type == "collection" && featured == true] | order(order asc, title asc){
+  *[_type == "collection" && featured == true && hidden != true] | order(order asc, title asc){
     _id, title, "slug": slug.current, highlightImage,
     "firstProductSlug": productSlugs[@ != ""][0]
   }
@@ -77,7 +77,7 @@ export const SHOP_COLLECTIONS_STRIP_QUERY = groq`
 
 export const PRODUCT_CONTENT_QUERY = groq`
   *[_type == "productContent" && slug == $slug][0]{
-    slug, htmlDescription, description, featuredColor, sizingNote, careNote
+    slug, htmlDescription, description, featuredColor, sizingNote, careNote, hidden
   }
 `;
 
@@ -85,4 +85,8 @@ export const ALL_FEATURED_COLORS_QUERY = groq`
   *[_type == "productContent" && defined(featuredColor) && featuredColor != ""]{
     slug, featuredColor
   }
+`;
+
+export const ALL_HIDDEN_PRODUCT_SLUGS_QUERY = groq`
+  *[_type == "productContent" && hidden == true]{ slug }
 `;

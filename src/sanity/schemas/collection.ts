@@ -31,6 +31,14 @@ export const collection = defineType({
         "Show in the Shop dropdown in the main nav and in the collections strip on the Shop page.",
     }),
     defineField({
+      name: "hidden",
+      title: "Hide from store",
+      type: "boolean",
+      initialValue: false,
+      description:
+        "Temporarily removes this collection from the site — nav, Shop page strip, and its own page all 404. Nothing is deleted; uncheck to bring it back.",
+    }),
+    defineField({
       name: "highlightImage",
       title: "Highlight image",
       type: "image",
@@ -55,11 +63,11 @@ export const collection = defineType({
     }),
   ],
   preview: {
-    select: { title: "title", subtitle: "productSlugs" },
-    prepare({ title, subtitle }) {
+    select: { title: "title", subtitle: "productSlugs", hidden: "hidden" },
+    prepare({ title, subtitle, hidden }) {
       const count = Array.isArray(subtitle) ? subtitle.length : 0;
       return {
-        title,
+        title: hidden ? `${title} (hidden)` : title,
         subtitle: `${count} product${count === 1 ? "" : "s"}`,
       };
     },

@@ -110,4 +110,5 @@ export type ProductContentDoc = {
   featuredColor?: string;
   sizingNote?: string;
   careNote?: string;
+  hidden?: boolean;
 };

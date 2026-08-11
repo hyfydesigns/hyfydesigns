@@ -1,6 +1,9 @@
 import { getProducts, type PrintfulProduct } from "@/lib/printful";
 import { sanityFetch } from "@/sanity/client";
-import { ALL_FEATURED_COLORS_QUERY } from "@/sanity/queries";
+import {
+  ALL_FEATURED_COLORS_QUERY,
+  ALL_HIDDEN_PRODUCT_SLUGS_QUERY,
+} from "@/sanity/queries";
 
 // Reorders a product's images so the featured color's variant mockup is
 // first. Falls through unchanged if no featured color set or no matching
@@ -24,18 +27,23 @@ export function applyFeaturedColor(
   return { ...product, images };
 }
 
-// Fetches products from Printful and applies the featuredColor override
-// from Sanity in one pass. Use this instead of getProducts() anywhere
-// listings are rendered so the featured mockup respects the CMS override.
+// Fetches products from Printful, applies the featuredColor override from
+// Sanity, and drops any product marked "hidden" in Sanity. Use this instead
+// of getProducts() anywhere listings are rendered so the featured mockup and
+// hide toggle both respect the CMS.
 export async function getProductsWithContent(): Promise<PrintfulProduct[]> {
-  const [products, overrides] = await Promise.all([
+  const [products, overrides, hidden] = await Promise.all([
     getProducts(),
     sanityFetch<{ slug: string; featuredColor?: string }[]>(
       ALL_FEATURED_COLORS_QUERY,
       {},
       [],
     ),
+    sanityFetch<{ slug: string }[]>(ALL_HIDDEN_PRODUCT_SLUGS_QUERY, {}, []),
   ]);
   const bySlug = new Map(overrides.map((o) => [o.slug, o.featuredColor]));
-  return products.map((p) => applyFeaturedColor(p, bySlug.get(p.slug)));
+  const hiddenSlugs = new Set(hidden.map((h) => h.slug));
+  return products
+    .filter((p) => !hiddenSlugs.has(p.slug))
+    .map((p) => applyFeaturedColor(p, bySlug.get(p.slug)));
 }

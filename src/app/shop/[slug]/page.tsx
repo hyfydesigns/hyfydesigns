@@ -9,7 +9,7 @@ import { Footer } from "@/components/layout/footer";
 import { Container } from "@/components/ui/container";
 import { ProductCard } from "@/components/ui/product-card";
 import { ProductDetail } from "@/components/shop/product-detail";
-import { getProduct, getProducts, toCardProduct } from "@/lib/printful";
+import { getProduct, toCardProduct } from "@/lib/printful";
 import { applyFeaturedColor, getProductsWithContent } from "@/lib/products";
 import { sanityFetch } from "@/sanity/client";
 import { PRODUCT_CONTENT_QUERY } from "@/sanity/queries";
@@ -22,7 +22,7 @@ const ALLOWED_HTML_TAGS = [
 ];
 
 export async function generateStaticParams() {
-  const products = await getProducts();
+  const products = await getProductsWithContent();
   return products.map((p) => ({ slug: p.slug }));
 }
 
@@ -39,6 +39,7 @@ export async function generateMetadata({
     { slug },
     null,
   );
+  if (content?.hidden) return { title: "Not found" };
   const product = applyFeaturedColor(rawProduct, content?.featuredColor);
   const description = truncateForSnippet(
     descriptionForMeta(content, product.description),
@@ -106,6 +107,7 @@ export default async function ProductPage({
     getProductsWithContent(),
     sanityFetch<ProductContentDoc | null>(PRODUCT_CONTENT_QUERY, { slug }, null),
   ]);
+  if (content?.hidden) notFound();
 
   const product = applyFeaturedColor(rawProduct, content?.featuredColor);
 

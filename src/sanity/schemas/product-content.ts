@@ -57,6 +57,14 @@ export const productContent = defineType({
         "Only used if the HTML field above is empty. Structured editor with bullets, links, formatting.",
     }),
     defineField({
+      name: "hidden",
+      title: "Hide from store",
+      type: "boolean",
+      initialValue: false,
+      description:
+        "Temporarily removes this product from the Shop grid, collections, and its product page. It stays in Printful; uncheck to bring it back.",
+    }),
+    defineField({
       name: "featuredColor",
       title: "Featured mockup color",
       type: "string",
@@ -82,9 +90,10 @@ export const productContent = defineType({
     }),
   ],
   preview: {
-    select: { title: "slug" },
-    prepare({ title }) {
-      return { title: title || "(no product selected)" };
+    select: { title: "slug", hidden: "hidden" },
+    prepare({ title, hidden }) {
+      const label = title || "(no product selected)";
+      return { title: hidden ? `${label} (hidden)` : label };
     },
   },
 });
