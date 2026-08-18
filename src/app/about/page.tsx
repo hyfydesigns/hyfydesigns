@@ -6,14 +6,15 @@ import { Container } from "@/components/ui/container";
 import { Eyebrow } from "@/components/ui/badge";
 
 export const metadata: Metadata = {
-  title: "About",
+  title: "About HyFy Designs | Houston T-Shirt Printing Studio",
   description:
-    "The story behind HyFy Designs — a Houston custom apparel studio with 20+ years of print experience.",
+    "Meet the Houston t-shirt printing studio behind HyFy Designs — 20+ years of screen printing, custom apparel, and print-on-demand merch for Houston teams and creatives.",
+  alternates: { canonical: "/about" },
 };
 
 const timeline = [
   { year: "2004", title: "Studio opens", copy: "First heat press, first stack of blank tees." },
-  { year: "2011", title: "Ten years in", copy: "Moved into the East End studio we still call home." },
+  { year: "2011", title: "Ten years in", copy: "Moved into the studio we still call home." },
   { year: "2019", title: "Print-on-demand launch", copy: "Partnered with Printful to ship one-off orders worldwide." },
   { year: "2024", title: "20-year milestone", copy: "Over 200,000 pieces printed for Houston teams, brands, and originals." },
 ];
@@ -42,9 +43,9 @@ export default function AboutPage() {
                 one Houston studio.
               </h1>
               <p className="mt-5 text-cream/80 text-base sm:text-lg max-w-2xl leading-relaxed">
-                HyFy Designs opened in 2004 as a two-person operation. Today
-                we&apos;re still small, still Houston-based, and still print
-                every order like it&apos;s our first.
+                HyFy Designs opened in 2004 as a two-person t-shirt printing
+                operation. Today we&apos;re still small, still Houston-based,
+                and still print every order like it&apos;s our first.
               </p>
             </div>
           </Container>
