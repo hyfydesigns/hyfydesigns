@@ -11,7 +11,7 @@ export const seoSettings = defineType({
       type: "string",
       description:
         "Shown in the browser tab and as the headline when the homepage is shared on social/messaging apps.",
-      initialValue: "HyFy Designs — Custom apparel and merch in Houston",
+      initialValue: "HyFy Designs — Custom T-Shirt Printing in Houston, TX",
     }),
     defineField({
       name: "siteDescription",
@@ -21,7 +21,7 @@ export const seoSettings = defineType({
       description:
         "Shown under the title in search results and share previews. Keep to about 155 characters for search, though share cards can show more.",
       initialValue:
-        "Houston's custom apparel studio since 2004. T-shirts, mugs, stickers, engravings, and print-on-demand merch. No minimums, quality guaranteed.",
+        "Custom t-shirt printing and screen printing in Houston, TX since 2004. Plus mugs, stickers, engravings, and print-on-demand merch. No minimums, quality guaranteed.",
     }),
     defineField({
       name: "ogImage",

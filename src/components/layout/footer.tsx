@@ -103,7 +103,7 @@ export function Footer() {
           <div className="flex flex-wrap gap-x-5 gap-y-2">
             <span className="inline-flex items-center gap-1.5">
               <MapPin className="h-3.5 w-3.5" strokeWidth={2} />
-              {site.address.line1}
+              {site.address.full}
             </span>
             <span className="inline-flex items-center gap-1.5">
               <Phone className="h-3.5 w-3.5" strokeWidth={2} />

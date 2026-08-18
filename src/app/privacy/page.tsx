@@ -24,7 +24,7 @@ export default async function PrivacyPage() {
   );
   const email = cms?.studioEmail?.trim() || site.address.email;
   const phone = cms?.studioPhone?.trim() || site.address.phone;
-  const address = cms?.studioAddress?.trim() || site.address.line1;
+  const address = cms?.studioAddress?.trim() || site.address.full;
 
   return (
     <>

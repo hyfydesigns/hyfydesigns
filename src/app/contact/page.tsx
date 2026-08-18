@@ -16,8 +16,7 @@ export const metadata: Metadata = {
     "Get in touch with the HyFy Designs studio in Houston. Custom orders, questions, or just to say hi.",
 };
 
-const DEFAULT_MAP_SRC =
-  "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d221730.6!2d-95.577!3d29.7604!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8640b8b4488d8501%3A0xca0d02def365053b!2sHouston%2C%20TX!5e0!3m2!1sen!2sus!4v1700000000";
+const DEFAULT_MAP_SRC = `https://www.google.com/maps?q=${encodeURIComponent(site.address.full)}&output=embed`;
 
 export default async function ContactPage() {
   const cms = await sanityFetch<ContactPageDoc | null>(
@@ -32,7 +31,7 @@ export default async function ContactPage() {
     cms?.intro ??
     "Whether it's a one-off tee or 500 pieces for an event — we're around and always excited to talk print.";
   const formHeading = cms?.formHeading ?? "Send us a message.";
-  const address = cms?.studioAddress?.trim() || site.address.line1;
+  const address = cms?.studioAddress?.trim() || site.address.full;
   const hours = cms?.studioHours?.trim() || site.address.hours;
   const phone = cms?.studioPhone?.trim() || site.address.phone;
   const email = cms?.studioEmail?.trim() || site.address.email;

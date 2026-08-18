@@ -2,10 +2,15 @@ export const site = {
   name: "HyFy Designs",
   tagline: "Custom apparel and merch, printed in Houston since 2004.",
   address: {
-    line1: "Houston, TX",
+    line1: "9898 Bissonnet St, STE 368",
+    city: "Houston",
+    state: "TX",
+    zip: "77036",
+    country: "US",
+    full: "9898 Bissonnet St, STE 368, Houston, TX 77036",
     hours: "Mon–Fri · 9am–6pm",
-    email: "hello@hyfydesigns.com",
-    phone: "(713) 555-0142",
+    email: "sales@hyfydesigns.com",
+    phone: "(832) 780-9924",
   },
   social: {
     instagram: "https://instagram.com/hyfydesigns",

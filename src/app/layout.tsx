@@ -9,6 +9,7 @@ import { sanityFetch } from "@/sanity/client";
 import { SEO_SETTINGS_QUERY } from "@/sanity/queries";
 import { urlFor } from "@/sanity/image";
 import type { SeoSettingsDoc } from "@/sanity/types";
+import { localBusinessJsonLd } from "@/lib/schema";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -44,9 +45,9 @@ const googleVerification =
   process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION ??
   process.env.GOOGLE_SITE_VERIFICATION;
 
-const DEFAULT_TITLE = "HyFy Designs — Custom apparel and merch in Houston";
+const DEFAULT_TITLE = "HyFy Designs — Custom T-Shirt Printing in Houston, TX";
 const DEFAULT_DESCRIPTION =
-  "Houston's custom apparel studio since 2004. T-shirts, mugs, stickers, engravings, and print-on-demand merch. No minimums, quality guaranteed.";
+  "Custom t-shirt printing and screen printing in Houston, TX since 2004. Plus mugs, stickers, engravings, and print-on-demand merch. No minimums, quality guaranteed.";
 
 export async function generateMetadata(): Promise<Metadata> {
   const seo = await sanityFetch<SeoSettingsDoc | null>(
@@ -97,6 +98,12 @@ export default function RootLayout({
         <CartDrawer />
         <Analytics />
         <SpeedInsights />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(localBusinessJsonLd()),
+          }}
+        />
       </body>
     </html>
   );

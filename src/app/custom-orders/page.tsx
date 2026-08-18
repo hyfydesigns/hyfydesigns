@@ -10,11 +10,13 @@ import { sanityFetch } from "@/sanity/client";
 import { PORTFOLIO_QUERY } from "@/sanity/queries";
 import { urlFor } from "@/sanity/image";
 import type { PortfolioProjectDoc } from "@/sanity/types";
+import { tshirtPrintingServiceJsonLd } from "@/lib/schema";
 
 export const metadata: Metadata = {
-  title: "Custom orders",
+  title: "Custom T-Shirt Printing in Houston, TX | Get a Free Quote",
   description:
-    "Get a custom quote for team merch, event tees, engravings, or personal projects. Upload your art and we quote within 24 hours.",
+    "Custom t-shirt printing, screen printing, and merch production in Houston, TX. Team apparel, event tees, and personal projects — upload your art and get a free quote within 24 hours.",
+  alternates: { canonical: "/custom-orders" },
 };
 
 const steps = [
@@ -62,7 +64,7 @@ export default async function CustomOrdersPage() {
         <section className="py-12 sm:py-20 bg-blue-tint/40">
           <Container>
             <div className="max-w-3xl">
-              <Eyebrow>Custom orders</Eyebrow>
+              <Eyebrow>Custom t-shirt printing · Houston, TX</Eyebrow>
               <h1 className="mt-4 text-4xl sm:text-5xl lg:text-6xl leading-[1.05]">
                 Bring your idea. <br />
                 <span className="relative inline-block">
@@ -71,8 +73,10 @@ export default async function CustomOrdersPage() {
                 </span>
               </h1>
               <p className="mt-5 text-ink-600 text-base sm:text-lg max-w-xl leading-relaxed">
-                Team merch, event tees, wedding favors, engraved gifts — 20+
-                years of studio experience, quoted per project.
+                Screen printing and custom t-shirt printing for Houston
+                teams, events, and small businesses — plus mugs, stickers,
+                and engravings. 20+ years of studio experience, quoted per
+                project.
               </p>
             </div>
           </Container>
@@ -156,6 +160,12 @@ export default async function CustomOrdersPage() {
         </section>
       </main>
       <Footer />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(tshirtPrintingServiceJsonLd()),
+        }}
+      />
     </>
   );
 }
