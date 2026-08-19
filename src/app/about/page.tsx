@@ -8,13 +8,13 @@ import { Eyebrow } from "@/components/ui/badge";
 export const metadata: Metadata = {
   title: "About HyFy Designs | Houston T-Shirt Printing Studio",
   description:
-    "Meet the Houston t-shirt printing studio behind HyFy Designs — 20+ years of screen printing, custom apparel, and print-on-demand merch for Houston teams and creatives.",
+    "Meet the Houston t-shirt printing studio behind HyFy Designs — 20+ years of screen printing, DTF, and vinyl for Houston families, teams, and organizations.",
   alternates: { canonical: "/about" },
 };
 
 const timeline = [
-  { year: "2004", title: "Studio opens", copy: "First heat press, first stack of blank tees." },
-  { year: "2011", title: "Ten years in", copy: "Moved into the studio we still call home." },
+  { year: "2004", title: "Studio opens", copy: "A small screen print shop in Houston's Third Ward." },
+  { year: "2011", title: "Ten years in", copy: "Outgrew the first shop, grew into a bigger studio." },
   { year: "2019", title: "Print-on-demand launch", copy: "Partnered with Printful to ship one-off orders worldwide." },
   { year: "2024", title: "20-year milestone", copy: "Over 200,000 pieces printed for Houston teams, brands, and originals." },
 ];
@@ -43,9 +43,10 @@ export default function AboutPage() {
                 one Houston studio.
               </h1>
               <p className="mt-5 text-cream/80 text-base sm:text-lg max-w-2xl leading-relaxed">
-                HyFy Designs opened in 2004 as a two-person t-shirt printing
-                operation. Today we&apos;re still small, still Houston-based,
-                and still print every order like it&apos;s our first.
+                HyFy Designs opened over two decades ago as a small screen
+                print shop in Houston&apos;s Third Ward. Today we&apos;re
+                still hands-on, still Houston-based, and still print every
+                order like it&apos;s our first.
               </p>
             </div>
           </Container>
@@ -61,23 +62,25 @@ export default function AboutPage() {
               <div className="prose-custom">
                 <p className="text-lg sm:text-xl font-voice italic text-navy leading-relaxed">
                   <span className="float-left mr-2 mt-1 text-6xl leading-none font-display not-italic text-red">
-                    W
-                  </span>
-                  hat started as a side hustle printing tees for a friend&apos;s
-                  band turned into a two-decade partnership with Houston&apos;s
-                  creative community.
+                    W</span>
+                  hat started as a small screen print shop in Houston&apos;s
+                  Third Ward has grown into a two-decade calling: printing
+                  for the people and organizations who make this city what
+                  it is.
                 </p>
                 <p className="mt-4 text-base text-ink-600 leading-relaxed">
-                  We&apos;ve printed for coffee shops in the Heights, wedding
-                  parties in Montrose, mural crews in the East End, and every
-                  5K on Buffalo Bayou you can name. Along the way, our tools
-                  changed — heat press to DTG to full print-on-demand via
-                  Printful — but the standard hasn&apos;t. Print sharp,
-                  color-true, feel-good, first time.
+                  We&apos;ve printed for family reunions, birthday parties,
+                  and organizations all over Houston — the gatherings where
+                  showing up in matching shirts means something. Along the
+                  way our tools grew from that first screen press to DTF and
+                  vinyl for apparel, sublimation for tumblers and mugs, and
+                  full print-on-demand through Printful for one-off orders.
+                  The equipment changed. The standard didn&apos;t: print
+                  sharp, color-true, feel-good, first time.
                 </p>
                 <p className="mt-4 text-base text-ink-600 leading-relaxed">
                   We&apos;re not the biggest print shop in Texas. We just want
-                  to be the one your friends recommend.
+                  to be the one you call first.
                 </p>
               </div>
             </div>
