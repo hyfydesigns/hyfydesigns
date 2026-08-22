@@ -3,6 +3,7 @@ import type Stripe from "stripe";
 import type { CartItem } from "@/lib/cart-store";
 import type { ShippingAddress, ShippingRate } from "@/lib/printful";
 import { stripe } from "@/lib/stripe";
+import { getProductsWithContent } from "@/lib/products";
 
 type Body = {
   items: CartItem[];
@@ -11,11 +12,72 @@ type Body = {
   rate?: ShippingRate;
 };
 
+const MAX_QUANTITY_PER_ITEM = 50;
+
+type VerifiedItem = {
+  variantId: string;
+  slug: string;
+  name: string;
+  color: string;
+  size: string;
+  price: number;
+  quantity: number;
+  image?: string;
+};
+
 export async function POST(req: Request) {
   const { items, email, address, rate } = (await req.json()) as Body;
 
   if (!items || items.length === 0) {
     return NextResponse.json({ error: "empty cart" }, { status: 400 });
+  }
+
+  // Re-derive every line item's price and name from the live Printful
+  // catalog. Client-submitted prices are never trusted for billing —
+  // without this, anyone can POST an arbitrary price for any variantId
+  // and get a real, payable checkout session at that price.
+  const catalog = await getProductsWithContent();
+  const variantIndex = new Map<
+    string,
+    { name: string; color: string; size: string; price: number; slug: string }
+  >();
+  for (const product of catalog) {
+    for (const variant of product.variants) {
+      variantIndex.set(variant.id, {
+        name: product.name,
+        color: variant.color,
+        size: variant.size,
+        price: variant.price,
+        slug: product.slug,
+      });
+    }
+  }
+
+  const verifiedItems: VerifiedItem[] = [];
+  for (const item of items) {
+    const authoritative = variantIndex.get(item.variantId);
+    if (!authoritative) {
+      return NextResponse.json(
+        {
+          error: `"${item.name || "An item"}" in your cart is no longer available. Please remove it and try again.`,
+        },
+        { status: 409 },
+      );
+    }
+    const quantity = Math.min(
+      Math.max(1, Math.floor(Number(item.quantity) || 0)),
+      MAX_QUANTITY_PER_ITEM,
+    );
+    verifiedItems.push({
+      variantId: item.variantId,
+      slug: authoritative.slug,
+      name: authoritative.name,
+      color: authoritative.color,
+      size: authoritative.size,
+      price: authoritative.price,
+      quantity,
+      image: item.image,
+    });
   }
 
   const isProduction = process.env.VERCEL_ENV === "production";
@@ -73,7 +135,7 @@ export async function POST(req: Request) {
   try {
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
-      line_items: items.map((i) => ({
+      line_items: verifiedItems.map((i) => ({
         price_data: {
           currency: "usd",
           product_data: {
