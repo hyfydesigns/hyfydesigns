@@ -18,7 +18,21 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "empty cart" }, { status: 400 });
   }
 
+  const isProduction = process.env.VERCEL_ENV === "production";
+
   if (!stripe) {
+    if (isProduction) {
+      // Never fake a successful order in production — a missing/invalid
+      // key here means no payment can actually be collected. Mock mode is
+      // strictly a local/preview development convenience.
+      return NextResponse.json(
+        {
+          error:
+            "Checkout is temporarily unavailable. Please contact us to place your order.",
+        },
+        { status: 503 },
+      );
+    }
     const url = new URL("/order-confirmation?mock=1", req.url);
     return NextResponse.json({ url: url.toString() });
   }
@@ -56,32 +70,47 @@ export async function POST(req: Request) {
   }
   if (email) metadata.customer_email = email;
 
-  const session = await stripe.checkout.sessions.create({
-    mode: "payment",
-    line_items: items.map((i) => ({
-      price_data: {
-        currency: "usd",
-        product_data: {
-          name: `${i.name} · ${i.color} · ${i.size}`,
-          metadata: { variantId: i.variantId, slug: i.slug },
-          ...(i.image ? { images: [i.image] } : {}),
+  try {
+    const session = await stripe.checkout.sessions.create({
+      mode: "payment",
+      line_items: items.map((i) => ({
+        price_data: {
+          currency: "usd",
+          product_data: {
+            name: `${i.name} · ${i.color} · ${i.size}`,
+            metadata: { variantId: i.variantId, slug: i.slug },
+            ...(i.image ? { images: [i.image] } : {}),
+          },
+          unit_amount: Math.round(i.price * 100),
         },
-        unit_amount: Math.round(i.price * 100),
-      },
-      quantity: i.quantity,
-    })),
-    // Only collect shipping on Stripe when we don't already have it
-    ...(address
-      ? { customer_email: email }
-      : {
-          shipping_address_collection: { allowed_countries: ["US"] },
-        }),
-    shipping_options: shippingOptions,
-    metadata,
-    success_url: `${origin}/order-confirmation?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${origin}/checkout`,
-    automatic_tax: { enabled: false },
-  });
+        quantity: i.quantity,
+      })),
+      // Only collect shipping on Stripe when we don't already have it
+      ...(address
+        ? { customer_email: email }
+        : {
+            shipping_address_collection: { allowed_countries: ["US"] },
+          }),
+      shipping_options: shippingOptions,
+      metadata,
+      success_url: `${origin}/order-confirmation?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/checkout`,
+      automatic_tax: { enabled: false },
+    });
 
-  return NextResponse.json({ url: session.url });
+    return NextResponse.json({ url: session.url });
+  } catch (err) {
+    // Covers a dead/cancelled Stripe account, revoked key, etc. — the key
+    // is present so the `!stripe` branch above never triggers, but the API
+    // call itself fails. Fail loudly to us, quietly (but honestly) to the
+    // customer.
+    console.error("[checkout] Stripe session creation failed:", err);
+    return NextResponse.json(
+      {
+        error:
+          "We're unable to process payments right now. Please contact us to place your order.",
+      },
+      { status: 503 },
+    );
+  }
 }
