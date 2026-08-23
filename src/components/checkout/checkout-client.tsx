@@ -112,9 +112,21 @@ export function CheckoutClient() {
           instance.teardown();
           return;
         }
+        // eslint-disable-next-line no-console
+        console.log("[braintree] Drop-in instance ready:", instance);
+        instance.on("paymentMethodRequestable", (e) =>
+          // eslint-disable-next-line no-console
+          console.log("[braintree] event: paymentMethodRequestable", e),
+        );
+        instance.on("noPaymentMethodRequestable", () =>
+          // eslint-disable-next-line no-console
+          console.log("[braintree] event: noPaymentMethodRequestable"),
+        );
         dropinInstanceRef.current = instance;
         setDropinReady(true);
       } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error("[braintree] Drop-in create() failed:", err);
         setError((err as Error).message || "Couldn't load the payment form.");
       }
     });
@@ -202,15 +214,30 @@ export function CheckoutClient() {
 
   async function onPay() {
     const instance = dropinInstanceRef.current;
-    if (!instance || !selectedRate) return;
+    // eslint-disable-next-line no-console
+    console.log("[braintree] onPay clicked. instance:", instance, "selectedRate:", selectedRate);
+    if (!instance || !selectedRate) {
+      // eslint-disable-next-line no-console
+      console.warn("[braintree] onPay bailed early — missing instance or selectedRate");
+      return;
+    }
+    // eslint-disable-next-line no-console
+    console.log(
+      "[braintree] isPaymentMethodRequestable:",
+      instance.isPaymentMethodRequestable(),
+    );
     setError(null);
     setStatus("loadingCheckout");
     try {
+      // eslint-disable-next-line no-console
+      console.log("[braintree] calling requestPaymentMethod()...");
       const payload = await withTimeout(
         instance.requestPaymentMethod(),
         20000,
         "The payment form didn't respond. Please check your card details and try again.",
       );
+      // eslint-disable-next-line no-console
+      console.log("[braintree] requestPaymentMethod resolved:", payload);
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -240,6 +267,8 @@ export function CheckoutClient() {
         `/order-confirmation?${data.mock ? "mock=1" : `transaction_id=${data.transactionId}`}`,
       );
     } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error("[braintree] onPay failed:", err);
       setError((err as Error).message);
       setStatus("payment");
     }
