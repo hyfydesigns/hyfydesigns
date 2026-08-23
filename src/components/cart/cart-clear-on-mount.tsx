@@ -13,12 +13,12 @@ export function CartClearOnMount() {
 
   useEffect(() => {
     const isPostCheckout =
-      searchParams.get("session_id") || searchParams.get("mock");
+      searchParams.get("transaction_id") || searchParams.get("mock");
     if (!isPostCheckout) return;
     if (items.length === 0) return;
 
     trackEvent("purchase_completed", {
-      session_id: searchParams.get("session_id") ?? "mock",
+      transaction_id: searchParams.get("transaction_id") ?? "mock",
       item_count: cartCount(items),
       subtotal: cartTotal(items),
     });

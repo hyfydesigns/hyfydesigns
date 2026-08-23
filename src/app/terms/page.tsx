@@ -76,7 +76,7 @@ export default async function TermsPage() {
 
           <h2>3. Ordering and payment</h2>
           <p>
-            Orders are placed through Stripe&rsquo;s hosted checkout. When
+            Orders are processed through Braintree, a PayPal service. When
             you complete checkout, you authorize us to charge your payment
             method for the total amount displayed, including product,
             shipping, and any applicable tax.

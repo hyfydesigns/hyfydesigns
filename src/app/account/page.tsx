@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { MessageCircle, Mail } from "lucide-react";
+import { MessageCircle, AlertCircle } from "lucide-react";
 import { NavBar } from "@/components/layout/nav-bar";
 import { Footer } from "@/components/layout/footer";
 import { Container } from "@/components/ui/container";
@@ -47,20 +47,16 @@ export default function AccountPage() {
 
               <aside className="space-y-4">
                 <div className="bg-white border border-hairline rounded-2xl p-5 sm:p-6">
-                  <div className="h-9 w-9 rounded-lg bg-blue-tint text-navy inline-flex items-center justify-center mb-3">
-                    <Mail className="h-4 w-4" strokeWidth={2} />
+                  <div className="h-9 w-9 rounded-lg bg-amber-100 text-amber-800 inline-flex items-center justify-center mb-3">
+                    <AlertCircle className="h-4 w-4" strokeWidth={2} />
                   </div>
                   <h3 className="text-base font-medium text-navy">
-                    Where&rsquo;s my order reference?
+                    Order lookup is temporarily unavailable
                   </h3>
                   <p className="mt-1.5 text-sm text-ink-600 leading-relaxed">
-                    Every purchase gets a Stripe receipt by email at the
-                    address you used at checkout. The reference starts with
-                    <code className="font-mono text-xs mx-1 px-1 py-0.5 bg-blue-tint text-navy rounded">
-                      cs_
-                    </code>
-                    and it&rsquo;s the &ldquo;Payment ID&rdquo; on that
-                    receipt.
+                    We&rsquo;re switching payment providers. In the meantime,
+                    contact us with your name and order date and we&rsquo;ll
+                    look it up right away.
                   </p>
                 </div>
 

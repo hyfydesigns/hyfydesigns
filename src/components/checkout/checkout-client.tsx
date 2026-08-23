@@ -1,21 +1,37 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowRight, Check, Truck } from "lucide-react";
+import { ArrowRight, Check, Truck, Lock } from "lucide-react";
 import { useCart, cartTotal, cartCount } from "@/lib/cart-store";
 import { trackEvent } from "@/components/analytics/posthog-provider";
 import { cn } from "@/lib/cn";
 import type { ShippingAddress, ShippingRate } from "@/lib/printful";
 
-type Status = "address" | "loadingRates" | "rates" | "loadingCheckout";
+type Status =
+  | "address"
+  | "loadingRates"
+  | "rates"
+  | "payment"
+  | "loadingCheckout";
 
 export function CheckoutClient() {
+  const router = useRouter();
   const items = useCart((s) => s.items);
   const [status, setStatus] = useState<Status>("address");
   const [error, setError] = useState<string | null>(null);
   const [rates, setRates] = useState<ShippingRate[]>([]);
   const [selectedRateId, setSelectedRateId] = useState<string | null>(null);
+
+  const [clientToken, setClientToken] = useState<string | null | undefined>(
+    undefined,
+  );
+  const dropinContainerRef = useRef<HTMLDivElement>(null);
+  const dropinInstanceRef = useRef<import("braintree-web-drop-in").Dropin | null>(
+    null,
+  );
+  const [dropinReady, setDropinReady] = useState(false);
 
   const [address, setAddress] = useState<ShippingAddress & { email: string }>({
     name: "",
@@ -29,6 +45,51 @@ export function CheckoutClient() {
 
   const subtotal = cartTotal(items);
   const selectedRate = rates.find((r) => r.id === selectedRateId);
+
+  // Fetch the Braintree client token once, early, so it's ready by the
+  // time the customer reaches the payment step.
+  useEffect(() => {
+    fetch("/api/braintree/client-token")
+      .then((r) => r.json())
+      .then((data: { clientToken?: string | null }) => {
+        setClientToken(data.clientToken ?? null);
+      })
+      .catch(() => setClientToken(null));
+  }, []);
+
+  // Mount the Drop-in UI when the payment step becomes active, tear it
+  // down when leaving it.
+  useEffect(() => {
+    if (status !== "payment" || !clientToken || !dropinContainerRef.current) {
+      return;
+    }
+    let cancelled = false;
+    setDropinReady(false);
+    import("braintree-web-drop-in").then(async (mod) => {
+      if (cancelled || !dropinContainerRef.current) return;
+      try {
+        const instance = await mod.default.create({
+          authorization: clientToken,
+          container: dropinContainerRef.current,
+        });
+        if (cancelled) {
+          instance.teardown();
+          return;
+        }
+        dropinInstanceRef.current = instance;
+        setDropinReady(true);
+      } catch (err) {
+        setError((err as Error).message || "Couldn't load the payment form.");
+      }
+    });
+    return () => {
+      cancelled = true;
+      if (dropinInstanceRef.current) {
+        dropinInstanceRef.current.teardown().catch(() => {});
+        dropinInstanceRef.current = null;
+      }
+    };
+  }, [status, clientToken]);
 
   if (items.length === 0) {
     return (
@@ -91,9 +152,8 @@ export function CheckoutClient() {
     }
   }
 
-  async function onCheckout() {
+  function onContinueToPayment() {
     if (!selectedRate) return;
-    setStatus("loadingCheckout");
     setError(null);
     trackEvent("checkout_started", {
       item_count: cartCount(items),
@@ -101,7 +161,16 @@ export function CheckoutClient() {
       shipping: selectedRate.rate,
       shipping_method: selectedRate.name,
     });
+    setStatus("payment");
+  }
+
+  async function onPay() {
+    const instance = dropinInstanceRef.current;
+    if (!instance || !selectedRate) return;
+    setError(null);
+    setStatus("loadingCheckout");
     try {
+      const payload = await instance.requestPaymentMethod();
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -116,15 +185,23 @@ export function CheckoutClient() {
             zip: address.zip,
             country: address.country,
           },
-          rate: selectedRate,
+          shippingRate: selectedRate.rate,
+          paymentMethodNonce: payload.nonce,
         }),
       });
-      const data = (await res.json()) as { url?: string; error?: string };
-      if (!data.url) throw new Error(data.error ?? "no checkout URL returned");
-      window.location.href = data.url;
+      const data = (await res.json()) as {
+        ok?: boolean;
+        transactionId?: string;
+        mock?: boolean;
+        error?: string;
+      };
+      if (!data.ok) throw new Error(data.error ?? "Payment failed.");
+      router.push(
+        `/order-confirmation?${data.mock ? "mock=1" : `transaction_id=${data.transactionId}`}`,
+      );
     } catch (err) {
       setError((err as Error).message);
-      setStatus("rates");
+      setStatus("payment");
     }
   }
 
@@ -237,7 +314,9 @@ export function CheckoutClient() {
           </form>
         </section>
 
-        {(status === "rates" || status === "loadingCheckout") && (
+        {(status === "rates" ||
+          status === "payment" ||
+          status === "loadingCheckout") && (
           <section className="bg-white border border-hairline rounded-2xl p-5 sm:p-7">
             <div className="flex items-center gap-2 mb-5">
               <span className="h-6 w-6 rounded-full bg-navy text-cream text-xs font-medium inline-flex items-center justify-center">
@@ -265,6 +344,7 @@ export function CheckoutClient() {
                       active
                         ? "border-navy bg-blue-tint/40"
                         : "border-hairline hover:border-navy",
+                      status !== "rates" && "pointer-events-none opacity-70",
                     )}
                   >
                     <input
@@ -274,6 +354,7 @@ export function CheckoutClient() {
                       checked={active}
                       onChange={() => setSelectedRateId(r.id)}
                       className="mt-1 flex-shrink-0"
+                      disabled={status !== "rates"}
                     />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-3">
@@ -306,19 +387,62 @@ export function CheckoutClient() {
               })}
             </div>
 
-            <button
-              type="button"
-              onClick={onCheckout}
-              disabled={!selectedRate || status === "loadingCheckout"}
-              className="mt-6 w-full min-h-12 rounded-lg bg-navy text-cream font-medium text-sm inline-flex items-center justify-center gap-2 disabled:opacity-50 tap"
-            >
-              {status === "loadingCheckout"
-                ? "Redirecting to Stripe…"
-                : "Continue to payment"}
-              {status !== "loadingCheckout" && (
+            {status === "rates" && (
+              <button
+                type="button"
+                onClick={onContinueToPayment}
+                disabled={!selectedRate}
+                className="mt-6 w-full min-h-12 rounded-lg bg-navy text-cream font-medium text-sm inline-flex items-center justify-center gap-2 disabled:opacity-50 tap"
+              >
+                Continue to payment
                 <ArrowRight className="h-4 w-4" strokeWidth={2} />
-              )}
-            </button>
+              </button>
+            )}
+          </section>
+        )}
+
+        {(status === "payment" || status === "loadingCheckout") && (
+          <section className="bg-white border border-hairline rounded-2xl p-5 sm:p-7">
+            <div className="flex items-center gap-2 mb-5">
+              <span className="h-6 w-6 rounded-full bg-navy text-cream text-xs font-medium inline-flex items-center justify-center">
+                3
+              </span>
+              <h2 className="text-lg">Payment</h2>
+              <button
+                type="button"
+                onClick={() => setStatus("rates")}
+                className="ml-auto text-xs text-navy underline"
+                disabled={status === "loadingCheckout"}
+              >
+                Edit shipping
+              </button>
+            </div>
+
+            {clientToken === undefined && (
+              <p className="text-sm text-ink-600">Loading payment form…</p>
+            )}
+            {clientToken === null && (
+              <p className="text-sm text-red-deep">
+                Payment form is temporarily unavailable. Please contact us to
+                place your order.
+              </p>
+            )}
+
+            <div ref={dropinContainerRef} />
+
+            {dropinReady && (
+              <button
+                type="button"
+                onClick={onPay}
+                disabled={status === "loadingCheckout"}
+                className="mt-4 w-full min-h-12 rounded-lg bg-navy text-cream font-medium text-sm inline-flex items-center justify-center gap-2 disabled:opacity-50 tap"
+              >
+                <Lock className="h-4 w-4" strokeWidth={2} />
+                {status === "loadingCheckout"
+                  ? "Processing…"
+                  : `Pay $${(subtotal + (selectedRate?.rate ?? 0)).toFixed(2)}`}
+              </button>
+            )}
           </section>
         )}
 

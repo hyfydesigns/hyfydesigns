@@ -52,14 +52,14 @@ export default async function PrivacyPage() {
             <li>
               <strong>Order information:</strong> name, email address,
               shipping address, phone number (optional), and the items you
-              purchase. We collect this on our checkout page before you are
-              redirected to Stripe.
+              purchase. We collect this on our checkout page.
             </li>
             <li>
               <strong>Payment information:</strong> your card number,
-              expiration, CVC, and billing address are entered on Stripe&rsquo;s
-              hosted checkout page and processed by Stripe. We never see or
-              store full card numbers on our servers.
+              expiration, and CVC are entered into a payment form on our
+              checkout page provided and processed by Braintree, a PayPal
+              service. We never see or store full card numbers on our
+              servers.
             </li>
             <li>
               <strong>Custom-order requests:</strong> the name, email, project
@@ -147,14 +147,14 @@ export default async function PrivacyPage() {
             <li>
               <strong>
                 <a
-                  href="https://stripe.com/privacy"
+                  href="https://www.paypal.com/us/legalhub/privacy-full"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  Stripe
+                  Braintree (a PayPal service)
                 </a>
               </strong>{" "}
-              — payment processor. Stripe collects your payment details
+              — payment processor. Braintree collects your payment details
               directly and handles all card processing under PCI DSS Level 1
               compliance.
             </li>
@@ -294,7 +294,7 @@ export default async function PrivacyPage() {
           <p>
             We take reasonable steps to protect your information, including
             HTTPS across the Site, PCI-compliant payment processing through
-            Stripe, and least-privilege access for our team. No transmission
+            Braintree, and least-privilege access for our team. No transmission
             over the internet is 100% secure, however, and we cannot
             guarantee absolute security.
           </p>
