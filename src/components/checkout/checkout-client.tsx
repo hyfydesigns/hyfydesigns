@@ -1,5 +1,13 @@
 "use client";
 
+// Required by braintree-web-drop-in. The CDN/script-tag integration injects
+// this automatically; the npm package does not, and its own internal
+// requestPaymentMethod() flow relies on a CSS `transitionend` event firing
+// on the widget after a successful tokenization. Without this stylesheet
+// that transition never happens, the event never fires, and the payment
+// promise hangs forever with no error.
+import "braintree-web-drop-in/dropin.css";
+
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
