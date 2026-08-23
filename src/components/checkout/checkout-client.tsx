@@ -16,6 +16,22 @@ type Status =
   | "payment"
   | "loadingCheckout";
 
+function withTimeout<T>(promise: Promise<T>, ms: number, message: string): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(message)), ms);
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (err) => {
+        clearTimeout(timer);
+        reject(err);
+      },
+    );
+  });
+}
+
 export function CheckoutClient() {
   const router = useRouter();
   const items = useCart((s) => s.items);
@@ -68,10 +84,22 @@ export function CheckoutClient() {
     import("braintree-web-drop-in").then(async (mod) => {
       if (cancelled || !dropinContainerRef.current) return;
       try {
-        const instance = await mod.default.create({
+        // PayPal/Venmo/Google Pay each need extra flow-specific config
+        // (e.g. PayPal requires an explicit amount + currency) to work
+        // correctly in Drop-in. Left unconfigured, an account with those
+        // enabled can leave the whole widget in a broken state — even for
+        // card entry. Restricting to card only until each is wired
+        // properly. The community @types package doesn't know `false` is
+        // a valid runtime value here (Braintree's own docs confirm it
+        // is), hence the cast.
+        const dropinOptions = {
           authorization: clientToken,
           container: dropinContainerRef.current,
-        });
+          paypal: false,
+          venmo: false,
+          googlePay: false,
+        } as unknown as Parameters<typeof mod.default.create>[0];
+        const instance = await mod.default.create(dropinOptions);
         if (cancelled) {
           instance.teardown();
           return;
@@ -170,7 +198,11 @@ export function CheckoutClient() {
     setError(null);
     setStatus("loadingCheckout");
     try {
-      const payload = await instance.requestPaymentMethod();
+      const payload = await withTimeout(
+        instance.requestPaymentMethod(),
+        20000,
+        "The payment form didn't respond. Please check your card details and try again.",
+      );
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
