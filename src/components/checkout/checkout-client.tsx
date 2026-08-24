@@ -1,11 +1,7 @@
 "use client";
 
 // Required by braintree-web-drop-in. The CDN/script-tag integration injects
-// this automatically; the npm package does not, and its own internal
-// requestPaymentMethod() flow relies on a CSS `transitionend` event firing
-// on the widget after a successful tokenization. Without this stylesheet
-// that transition never happens, the event never fires, and the payment
-// promise hangs forever with no error.
+// this automatically; the npm package does not.
 import "braintree-web-drop-in/dropin.css";
 
 import { useEffect, useRef, useState } from "react";
@@ -115,13 +111,7 @@ export function CheckoutClient() {
           paypal: false,
           venmo: false,
           googlePay: false,
-          // Sandbox/production gateways can be configured to require 3D
-          // Secure verification on card transactions regardless of what
-          // Drop-in is told. If that's on and Drop-in was never told to
-          // render the 3DS challenge UI, tokenization silently waits on a
-          // step that has nowhere to display — which looks exactly like a
-          // hang: no error, no network activity, requestPaymentMethod()
-          // never settles.
+          // This gateway requires 3D Secure on card transactions.
           threeDSecure: true,
         } as unknown as Parameters<typeof mod.default.create>[0];
         const instance = await mod.default.create(dropinOptions);
@@ -129,16 +119,6 @@ export function CheckoutClient() {
           instance.teardown();
           return;
         }
-        // eslint-disable-next-line no-console
-        console.log("[braintree] Drop-in instance ready:", instance);
-        instance.on("paymentMethodRequestable", (e) =>
-          // eslint-disable-next-line no-console
-          console.log("[braintree] event: paymentMethodRequestable", e),
-        );
-        instance.on("noPaymentMethodRequestable", () =>
-          // eslint-disable-next-line no-console
-          console.log("[braintree] event: noPaymentMethodRequestable"),
-        );
         dropinInstanceRef.current = instance;
         setDropinReady(true);
       } catch (err) {
@@ -231,49 +211,12 @@ export function CheckoutClient() {
 
   async function onPay() {
     const instance = dropinInstanceRef.current;
-    // eslint-disable-next-line no-console
-    console.log("[braintree] onPay clicked. instance:", instance, "selectedRate:", selectedRate);
-    if (!instance || !selectedRate) {
-      // eslint-disable-next-line no-console
-      console.warn("[braintree] onPay bailed early — missing instance or selectedRate");
-      return;
-    }
-    // eslint-disable-next-line no-console
-    console.log(
-      "[braintree] isPaymentMethodRequestable:",
-      instance.isPaymentMethodRequestable(),
-    );
+    if (!instance || !selectedRate) return;
+
     setError(null);
     setStatus("loadingCheckout");
 
-    // TEMPORARY diagnostic: hosted-fields' tokenize() doesn't call the
-    // network directly — it emits a TOKENIZATION_REQUEST over a
-    // cross-frame message bus to code running inside the Braintree
-    // hosted-fields iframe (loaded live from their CDN, not our bundle),
-    // which is what actually calls the network. A fetch/XHR patch on the
-    // top frame can't see that. postMessage is the one channel that's
-    // guaranteed to cross the frame boundary, so intercept both outbound
-    // (Window.prototype.postMessage, called on the iframe's contentWindow)
-    // and inbound (a 'message' listener on this window) traffic.
-    const origPostMessage = window.Window.prototype.postMessage;
-    window.Window.prototype.postMessage = function (
-      this: Window,
-      ...args: unknown[]
-    ) {
-      // eslint-disable-next-line no-console
-      console.log("[bus] outbound postMessage:", args[0]);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return (origPostMessage as any).apply(this, args);
-    } as typeof origPostMessage;
-    const onInboundMessage = (e: MessageEvent) => {
-      // eslint-disable-next-line no-console
-      console.log("[bus] inbound message from", e.origin, ":", e.data);
-    };
-    window.addEventListener("message", onInboundMessage);
-
     try {
-      // eslint-disable-next-line no-console
-      console.log("[braintree] calling requestPaymentMethod()...");
       const total = subtotal + selectedRate.rate;
       const payload = await withTimeout(
         instance.requestPaymentMethod({
@@ -285,10 +228,6 @@ export function CheckoutClient() {
         20000,
         "The payment form didn't respond. Please check your card details and try again.",
       );
-      // eslint-disable-next-line no-console
-      console.log("[braintree] requestPaymentMethod resolved:", payload);
-      window.Window.prototype.postMessage = origPostMessage;
-      window.removeEventListener("message", onInboundMessage);
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -318,10 +257,6 @@ export function CheckoutClient() {
         `/order-confirmation?${data.mock ? "mock=1" : `transaction_id=${data.transactionId}`}`,
       );
     } catch (err) {
-      window.Window.prototype.postMessage = origPostMessage;
-      window.removeEventListener("message", onInboundMessage);
-      // eslint-disable-next-line no-console
-      console.error("[braintree] onPay failed:", err);
       setError((err as Error).message);
       setStatus("payment");
     }
