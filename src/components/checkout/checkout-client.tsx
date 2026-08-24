@@ -237,27 +237,30 @@ export function CheckoutClient() {
     setError(null);
     setStatus("loadingCheckout");
 
-    // TEMPORARY diagnostic: log every fetch/XHR made anywhere on the page
-    // while requestPaymentMethod() is in flight, so we have ground truth
-    // on whether Braintree's tokenization call is ever attempted — instead
-    // of relying on DevTools Network tab, which may filter differently
-    // than expected. Restored in the finally block below.
-    const origFetch = window.fetch;
-    const origOpen = XMLHttpRequest.prototype.open;
-    window.fetch = function (...args: Parameters<typeof fetch>) {
-      // eslint-disable-next-line no-console
-      console.log("[net] fetch:", args[0]);
-      return origFetch.apply(window, args);
-    };
-    XMLHttpRequest.prototype.open = function (
-      this: XMLHttpRequest,
+    // TEMPORARY diagnostic: hosted-fields' tokenize() doesn't call the
+    // network directly — it emits a TOKENIZATION_REQUEST over a
+    // cross-frame message bus to code running inside the Braintree
+    // hosted-fields iframe (loaded live from their CDN, not our bundle),
+    // which is what actually calls the network. A fetch/XHR patch on the
+    // top frame can't see that. postMessage is the one channel that's
+    // guaranteed to cross the frame boundary, so intercept both outbound
+    // (Window.prototype.postMessage, called on the iframe's contentWindow)
+    // and inbound (a 'message' listener on this window) traffic.
+    const origPostMessage = window.Window.prototype.postMessage;
+    window.Window.prototype.postMessage = function (
+      this: Window,
       ...args: unknown[]
     ) {
       // eslint-disable-next-line no-console
-      console.log("[net] xhr:", args[0], args[1]);
+      console.log("[bus] outbound postMessage:", args[0]);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return (origOpen as any).apply(this, args);
-    } as typeof origOpen;
+      return (origPostMessage as any).apply(this, args);
+    } as typeof origPostMessage;
+    const onInboundMessage = (e: MessageEvent) => {
+      // eslint-disable-next-line no-console
+      console.log("[bus] inbound message from", e.origin, ":", e.data);
+    };
+    window.addEventListener("message", onInboundMessage);
 
     try {
       // eslint-disable-next-line no-console
@@ -275,8 +278,8 @@ export function CheckoutClient() {
       );
       // eslint-disable-next-line no-console
       console.log("[braintree] requestPaymentMethod resolved:", payload);
-      window.fetch = origFetch;
-      XMLHttpRequest.prototype.open = origOpen;
+      window.Window.prototype.postMessage = origPostMessage;
+      window.removeEventListener("message", onInboundMessage);
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -306,8 +309,8 @@ export function CheckoutClient() {
         `/order-confirmation?${data.mock ? "mock=1" : `transaction_id=${data.transactionId}`}`,
       );
     } catch (err) {
-      window.fetch = origFetch;
-      XMLHttpRequest.prototype.open = origOpen;
+      window.Window.prototype.postMessage = origPostMessage;
+      window.removeEventListener("message", onInboundMessage);
       // eslint-disable-next-line no-console
       console.error("[braintree] onPay failed:", err);
       setError((err as Error).message);
