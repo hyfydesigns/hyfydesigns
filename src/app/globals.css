@@ -165,22 +165,3 @@ button, [role="button"], a {
   background: rgba(10, 42, 110, 0.25);
   border-radius: 3px;
 }
-
-/*
- * Braintree Drop-in's own CSS transitions .braintree-sheet's max-height
- * from the keyword `fit-content` down to a fixed px value after a
- * successful card tokenization, and its JS (transition-helper.js) waits
- * indefinitely for the resulting `transitionend` event with no fallback
- * or timeout of its own. Confirmed via isolated test: Chromium never
- * fires transitionend for a max-height transition whose start value is
- * `fit-content` — the value still changes correctly, but no interpolation
- * path is found, so it's treated as a discrete (non-animated) change and
- * no event fires. That leaves requestPaymentMethod() hanging forever even
- * though the card was already tokenized successfully. Pinning this to a
- * fixed px value keeps both ends of the transition on real lengths so
- * transitionend fires reliably. !important guarantees this wins over
- * dropin.css regardless of import order.
- */
-.braintree-sheet {
-  max-height: 600px !important;
-}
