@@ -82,9 +82,18 @@ export function CheckoutClient() {
   }, []);
 
   // Mount the Drop-in UI when the payment step becomes active, tear it
-  // down when leaving it.
+  // down when leaving it. Gated on inPaymentFlow (not the raw status)
+  // because onPay() sets status to "loadingCheckout" *before* awaiting
+  // requestPaymentMethod() — if this effect depended on status directly,
+  // that transition would rerun it, tearing down the very Drop-in
+  // instance a tokenization request is still in flight against. That's
+  // exactly what was causing the checkout to hang forever: the
+  // TOKENIZATION_REQUEST went out, then this effect's cleanup destroyed
+  // the instance handling it before any reply could come back.
+  const inPaymentFlow = status === "payment" || status === "loadingCheckout";
+
   useEffect(() => {
-    if (status !== "payment" || !clientToken || !dropinContainerRef.current) {
+    if (!inPaymentFlow || !clientToken || !dropinContainerRef.current) {
       return;
     }
     let cancelled = false;
@@ -145,7 +154,7 @@ export function CheckoutClient() {
         dropinInstanceRef.current = null;
       }
     };
-  }, [status, clientToken]);
+  }, [inPaymentFlow, clientToken]);
 
   if (items.length === 0) {
     return (
