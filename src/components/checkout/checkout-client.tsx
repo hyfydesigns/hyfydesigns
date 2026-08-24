@@ -106,6 +106,14 @@ export function CheckoutClient() {
           paypal: false,
           venmo: false,
           googlePay: false,
+          // Sandbox/production gateways can be configured to require 3D
+          // Secure verification on card transactions regardless of what
+          // Drop-in is told. If that's on and Drop-in was never told to
+          // render the 3DS challenge UI, tokenization silently waits on a
+          // step that has nowhere to display — which looks exactly like a
+          // hang: no error, no network activity, requestPaymentMethod()
+          // never settles.
+          threeDSecure: true,
         } as unknown as Parameters<typeof mod.default.create>[0];
         const instance = await mod.default.create(dropinOptions);
         if (cancelled) {
@@ -231,8 +239,14 @@ export function CheckoutClient() {
     try {
       // eslint-disable-next-line no-console
       console.log("[braintree] calling requestPaymentMethod()...");
+      const total = subtotal + selectedRate.rate;
       const payload = await withTimeout(
-        instance.requestPaymentMethod(),
+        instance.requestPaymentMethod({
+          threeDSecure: {
+            amount: total.toFixed(2),
+            email: address.email,
+          },
+        }),
         20000,
         "The payment form didn't respond. Please check your card details and try again.",
       );
