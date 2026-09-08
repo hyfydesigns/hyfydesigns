@@ -76,10 +76,10 @@ export default async function TermsPage() {
 
           <h2>3. Ordering and payment</h2>
           <p>
-            Orders are processed through Braintree, a PayPal service. When
-            you complete checkout, you authorize us to charge your payment
-            method for the total amount displayed, including product,
-            shipping, and any applicable tax.
+            Orders are processed through PayPal. When you complete checkout,
+            you authorize us to charge your payment method for the total
+            amount displayed, including product, shipping, and any
+            applicable tax.
           </p>
           <p>
             We reserve the right to refuse or cancel any order for any

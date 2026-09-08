@@ -55,11 +55,10 @@ export default async function PrivacyPage() {
               purchase. We collect this on our checkout page.
             </li>
             <li>
-              <strong>Payment information:</strong> your card number,
-              expiration, and CVC are entered into a payment form on our
-              checkout page provided and processed by Braintree, a PayPal
-              service. We never see or store full card numbers on our
-              servers.
+              <strong>Payment information:</strong> your payment details are
+              entered directly within PayPal&rsquo;s own payment window, not
+              on our page. We never see or store your card or PayPal
+              account details.
             </li>
             <li>
               <strong>Custom-order requests:</strong> the name, email, project
@@ -151,12 +150,12 @@ export default async function PrivacyPage() {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  Braintree (a PayPal service)
+                  PayPal
                 </a>
               </strong>{" "}
-              — payment processor. Braintree collects your payment details
-              directly and handles all card processing under PCI DSS Level 1
-              compliance.
+              — payment processor. PayPal collects your payment details
+              directly and handles all payment processing under PCI DSS
+              Level 1 compliance.
             </li>
             <li>
               <strong>
@@ -294,7 +293,7 @@ export default async function PrivacyPage() {
           <p>
             We take reasonable steps to protect your information, including
             HTTPS across the Site, PCI-compliant payment processing through
-            Braintree, and least-privilege access for our team. No transmission
+            PayPal, and least-privilege access for our team. No transmission
             over the internet is 100% secure, however, and we cannot
             guarantee absolute security.
           </p>

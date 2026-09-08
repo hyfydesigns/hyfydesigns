@@ -1,16 +1,16 @@
 "use client";
 
-// Required by braintree-web-drop-in. The CDN/script-tag integration injects
-// this automatically; the npm package does not.
-import "braintree-web-drop-in/dropin.css";
-
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowRight, Check, Truck, Lock } from "lucide-react";
+import { ArrowRight, Check, Truck } from "lucide-react";
 import { useCart, cartTotal, cartCount } from "@/lib/cart-store";
 import { trackEvent } from "@/components/analytics/posthog-provider";
 import { cn } from "@/lib/cn";
+import {
+  loadPaypalScript,
+  type PaypalButtonsInstance,
+} from "@/lib/paypal-client";
 import type { ShippingAddress, ShippingRate } from "@/lib/printful";
 
 type Status =
@@ -36,6 +36,11 @@ function withTimeout<T>(promise: Promise<T>, ms: number, message: string): Promi
   });
 }
 
+// Public identifier, safe to inline at build time — unlike a Braintree
+// client token, PayPal's client ID isn't session-scoped and doesn't need
+// a server round trip to obtain.
+const paypalClientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
+
 export function CheckoutClient() {
   const router = useRouter();
   const items = useCart((s) => s.items);
@@ -44,14 +49,9 @@ export function CheckoutClient() {
   const [rates, setRates] = useState<ShippingRate[]>([]);
   const [selectedRateId, setSelectedRateId] = useState<string | null>(null);
 
-  const [clientToken, setClientToken] = useState<string | null | undefined>(
-    undefined,
-  );
-  const dropinContainerRef = useRef<HTMLDivElement>(null);
-  const dropinInstanceRef = useRef<import("braintree-web-drop-in").Dropin | null>(
-    null,
-  );
-  const [dropinReady, setDropinReady] = useState(false);
+  const paypalContainerRef = useRef<HTMLDivElement>(null);
+  const buttonsInstanceRef = useRef<PaypalButtonsInstance | null>(null);
+  const [buttonsReady, setButtonsReady] = useState(false);
 
   const [address, setAddress] = useState<ShippingAddress & { email: string }>({
     name: "",
@@ -66,75 +66,137 @@ export function CheckoutClient() {
   const subtotal = cartTotal(items);
   const selectedRate = rates.find((r) => r.id === selectedRateId);
 
-  // Fetch the Braintree client token once, early, so it's ready by the
-  // time the customer reaches the payment step.
-  useEffect(() => {
-    fetch("/api/braintree/client-token")
-      .then((r) => r.json())
-      .then((data: { clientToken?: string | null }) => {
-        setClientToken(data.clientToken ?? null);
-      })
-      .catch(() => setClientToken(null));
-  }, []);
-
-  // Mount the Drop-in UI when the payment step becomes active, tear it
-  // down when leaving it. Gated on inPaymentFlow (not the raw status)
-  // because onPay() sets status to "loadingCheckout" *before* awaiting
-  // requestPaymentMethod() — if this effect depended on status directly,
-  // that transition would rerun it, tearing down the very Drop-in
-  // instance a tokenization request is still in flight against. That's
-  // exactly what was causing the checkout to hang forever: the
-  // TOKENIZATION_REQUEST went out, then this effect's cleanup destroyed
-  // the instance handling it before any reply could come back.
+  // Mount PayPal's Buttons when the payment step becomes active, tear
+  // them down when leaving it. Gated on inPaymentFlow (not the raw
+  // status) rather than status === "payment" alone, for the same reason
+  // the old Braintree Drop-in mount effect had to be: onApprove below
+  // sets status to "loadingCheckout" while our own capture request is in
+  // flight, and a status-keyed dependency array would rerun this effect
+  // right then, tearing down the Buttons instance mid-flow. See
+  // [[braintree-dropin-hang-bug]] memory for the incident that taught us
+  // this the hard way.
   const inPaymentFlow = status === "payment" || status === "loadingCheckout";
 
   useEffect(() => {
-    if (!inPaymentFlow || !clientToken || !dropinContainerRef.current) {
+    if (!inPaymentFlow || !paypalClientId || !paypalContainerRef.current) {
       return;
     }
     let cancelled = false;
-    setDropinReady(false);
-    import("braintree-web-drop-in").then(async (mod) => {
-      if (cancelled || !dropinContainerRef.current) return;
-      try {
-        // PayPal/Venmo/Google Pay each need extra flow-specific config
-        // (e.g. PayPal requires an explicit amount + currency) to work
-        // correctly in Drop-in. Left unconfigured, an account with those
-        // enabled can leave the whole widget in a broken state — even for
-        // card entry. Restricting to card only until each is wired
-        // properly. The community @types package doesn't know `false` is
-        // a valid runtime value here (Braintree's own docs confirm it
-        // is), hence the cast.
-        const dropinOptions = {
-          authorization: clientToken,
-          container: dropinContainerRef.current,
-          paypal: false,
-          venmo: false,
-          googlePay: false,
-          // This gateway requires 3D Secure on card transactions.
-          threeDSecure: true,
-        } as unknown as Parameters<typeof mod.default.create>[0];
-        const instance = await mod.default.create(dropinOptions);
-        if (cancelled) {
-          instance.teardown();
-          return;
-        }
-        dropinInstanceRef.current = instance;
-        setDropinReady(true);
-      } catch (err) {
-        // eslint-disable-next-line no-console
-        console.error("[braintree] Drop-in create() failed:", err);
-        setError((err as Error).message || "Couldn't load the payment form.");
-      }
-    });
+    setButtonsReady(false);
+
+    loadPaypalScript(paypalClientId)
+      .then((paypal) => {
+        if (cancelled || !paypalContainerRef.current) return;
+
+        const buttons = paypal.Buttons({
+          style: { layout: "vertical", shape: "rect" },
+          createOrder: async () => {
+            if (!selectedRate) throw new Error("Select a shipping method first.");
+            const res = await fetch("/api/paypal/create-order", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                items,
+                address: {
+                  name: address.name,
+                  address1: address.address1,
+                  city: address.city,
+                  state: address.state,
+                  zip: address.zip,
+                  country: address.country,
+                },
+                shippingRate: selectedRate.rate,
+              }),
+            });
+            const data = (await res.json()) as {
+              orderId?: string;
+              error?: string;
+            };
+            if (!data.orderId) {
+              throw new Error(data.error ?? "Couldn't start checkout.");
+            }
+            return data.orderId;
+          },
+          onApprove: async (data) => {
+            setError(null);
+            setStatus("loadingCheckout");
+            try {
+              const res = await withTimeout(
+                fetch("/api/paypal/capture-order", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    orderId: data.orderID,
+                    items,
+                    email: address.email,
+                    address: {
+                      name: address.name,
+                      address1: address.address1,
+                      city: address.city,
+                      state: address.state,
+                      zip: address.zip,
+                      country: address.country,
+                    },
+                  }),
+                }),
+                20000,
+                "That took too long to confirm. Please check your email for a receipt before trying again.",
+              );
+              const result = (await res.json()) as {
+                ok?: boolean;
+                transactionId?: string;
+                mock?: boolean;
+                error?: string;
+              };
+              if (!result.ok) throw new Error(result.error ?? "Payment failed.");
+              router.push(
+                `/order-confirmation?${result.mock ? "mock=1" : `transaction_id=${result.transactionId}`}`,
+              );
+            } catch (err) {
+              setError((err as Error).message);
+              setStatus("payment");
+            }
+          },
+          onCancel: () => {
+            // User closed the PayPal window without approving — not an
+            // error, just stay on the payment step.
+          },
+          onError: (err) => {
+            console.error("[paypal] Buttons error:", err);
+            setError("Something went wrong with PayPal. Please try again.");
+          },
+        });
+
+        buttons
+          .render(paypalContainerRef.current)
+          .then(() => {
+            if (!cancelled) setButtonsReady(true);
+          })
+          .catch((err: unknown) => {
+            console.error("[paypal] Buttons render() failed:", err);
+            setError("Couldn't load the payment form.");
+          });
+        buttonsInstanceRef.current = buttons;
+      })
+      .catch((err: unknown) => {
+        console.error("[paypal] Failed to load SDK:", err);
+        setError("Couldn't load the payment form.");
+      });
+
     return () => {
       cancelled = true;
-      if (dropinInstanceRef.current) {
-        dropinInstanceRef.current.teardown().catch(() => {});
-        dropinInstanceRef.current = null;
+      if (buttonsInstanceRef.current) {
+        buttonsInstanceRef.current.close().catch(() => {});
+        buttonsInstanceRef.current = null;
       }
     };
-  }, [inPaymentFlow, clientToken]);
+    // items/address/selectedRate are intentionally omitted: by the time
+    // status reaches "payment" they're locked (editing either sends
+    // status back to "address"/"rates", which unmounts this effect via
+    // inPaymentFlow before they can change), so the values captured when
+    // the effect runs stay correct for the whole payment step.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inPaymentFlow]);
 
   if (items.length === 0) {
     return (
@@ -207,59 +269,6 @@ export function CheckoutClient() {
       shipping_method: selectedRate.name,
     });
     setStatus("payment");
-  }
-
-  async function onPay() {
-    const instance = dropinInstanceRef.current;
-    if (!instance || !selectedRate) return;
-
-    setError(null);
-    setStatus("loadingCheckout");
-
-    try {
-      const total = subtotal + selectedRate.rate;
-      const payload = await withTimeout(
-        instance.requestPaymentMethod({
-          threeDSecure: {
-            amount: total.toFixed(2),
-            email: address.email,
-          },
-        }),
-        20000,
-        "The payment form didn't respond. Please check your card details and try again.",
-      );
-      const res = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          items,
-          email: address.email,
-          address: {
-            name: address.name,
-            address1: address.address1,
-            city: address.city,
-            state: address.state,
-            zip: address.zip,
-            country: address.country,
-          },
-          shippingRate: selectedRate.rate,
-          paymentMethodNonce: payload.nonce,
-        }),
-      });
-      const data = (await res.json()) as {
-        ok?: boolean;
-        transactionId?: string;
-        mock?: boolean;
-        error?: string;
-      };
-      if (!data.ok) throw new Error(data.error ?? "Payment failed.");
-      router.push(
-        `/order-confirmation?${data.mock ? "mock=1" : `transaction_id=${data.transactionId}`}`,
-      );
-    } catch (err) {
-      setError((err as Error).message);
-      setStatus("payment");
-    }
   }
 
   return (
@@ -475,30 +484,28 @@ export function CheckoutClient() {
               </button>
             </div>
 
-            {clientToken === undefined && (
-              <p className="text-sm text-ink-600">Loading payment form…</p>
-            )}
-            {clientToken === null && (
+            {!paypalClientId && (
               <p className="text-sm text-red-deep">
                 Payment form is temporarily unavailable. Please contact us to
                 place your order.
               </p>
             )}
 
-            <div ref={dropinContainerRef} />
+            {paypalClientId && !buttonsReady && (
+              <p className="text-sm text-ink-600 mb-2">
+                Loading payment options…
+              </p>
+            )}
 
-            {dropinReady && (
-              <button
-                type="button"
-                onClick={onPay}
-                disabled={status === "loadingCheckout"}
-                className="mt-4 w-full min-h-12 rounded-lg bg-navy text-cream font-medium text-sm inline-flex items-center justify-center gap-2 disabled:opacity-50 tap"
-              >
-                <Lock className="h-4 w-4" strokeWidth={2} />
-                {status === "loadingCheckout"
-                  ? "Processing…"
-                  : `Pay $${(subtotal + (selectedRate?.rate ?? 0)).toFixed(2)}`}
-              </button>
+            <div
+              ref={paypalContainerRef}
+              className={cn(status === "loadingCheckout" && "opacity-60 pointer-events-none")}
+            />
+
+            {status === "loadingCheckout" && (
+              <p className="mt-3 text-sm text-ink-600">
+                Confirming your order…
+              </p>
             )}
           </section>
         )}
