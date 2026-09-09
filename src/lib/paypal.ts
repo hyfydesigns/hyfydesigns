@@ -7,7 +7,10 @@
 // it is more transparent and maintainable than debugging someone else's
 // abstraction later.
 
-const clientId = process.env.PAYPAL_CLIENT_ID;
+// Same var the browser-side loader reads (src/lib/paypal-client.ts) — a
+// PayPal client ID isn't sensitive, so one value serves both, rather than
+// two separately-set vars that can silently drift out of sync.
+const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
 const clientSecret = process.env.PAYPAL_CLIENT_SECRET;
 
 export const hasPaypal = Boolean(clientId && clientSecret);
