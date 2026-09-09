@@ -233,6 +233,104 @@ export async function sendQuoteAutoResponse(
 }
 
 // -----------------------------------------------------------------
+// Order confirmation (checkout) — not Sanity-templated, since it needs
+// a dynamic itemized table the {{var}} template system doesn't fit.
+// This is also the customer's only practical way to learn their order
+// reference for later lookup on /account, since PayPal's own receipt
+// email is generic and easy to lose track of.
+// -----------------------------------------------------------------
+
+export type OrderConfirmationItem = {
+  name: string;
+  color: string;
+  size: string;
+  price: number;
+  quantity: number;
+};
+
+export type OrderConfirmationShipping = {
+  name: string;
+  address1: string;
+  city: string;
+  state: string;
+  zip: string;
+  country: string;
+};
+
+export async function sendOrderConfirmationEmail(params: {
+  email: string;
+  reference: string;
+  items: OrderConfirmationItem[];
+  shipping: OrderConfirmationShipping;
+  subtotal: number;
+  shippingCost: number;
+  total: number;
+}): Promise<void> {
+  const fmt = (n: number) => `$${n.toFixed(2)}`;
+
+  if (!resend) {
+    console.log(
+      `[email mocked] order confirmation to ${params.email}: ${params.reference}`,
+    );
+    return;
+  }
+
+  const itemsHtml = params.items
+    .map(
+      (i) => `
+      <tr>
+        <td style="padding: 8px 0; font-size: 14px; color: #0A0A0A;">
+          ${escapeHtml(i.name)}
+          <span style="color: #6B6B67;">(${escapeHtml(i.color)} / ${escapeHtml(i.size)}) &times; ${i.quantity}</span>
+        </td>
+        <td style="padding: 8px 0; font-size: 14px; text-align: right; white-space: nowrap;">${fmt(i.price * i.quantity)}</td>
+      </tr>`,
+    )
+    .join("");
+
+  const html = `
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 560px; margin: 0 auto; padding: 24px; color: #0A0A0A;">
+      <h1 style="font-size: 24px; color: #0A2A6E; margin: 0 0 8px; font-weight: 500;">Order confirmed</h1>
+      <p style="font-size: 15px; line-height: 1.6; color: #3D3D3A; margin: 0 0 20px;">
+        Thanks for your order! We're printing it now. You'll get tracking within 48 hours.
+      </p>
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 8px;">
+        ${itemsHtml}
+      </table>
+      <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+        <tr><td style="padding: 4px 0; color: #6B6B67;">Subtotal</td><td style="padding: 4px 0; text-align: right;">${fmt(params.subtotal)}</td></tr>
+        <tr><td style="padding: 4px 0; color: #6B6B67;">Shipping</td><td style="padding: 4px 0; text-align: right;">${fmt(params.shippingCost)}</td></tr>
+        <tr>
+          <td style="padding: 8px 0; font-weight: 500; color: #0A2A6E; border-top: 1px solid #E6EEFB;">Total</td>
+          <td style="padding: 8px 0; text-align: right; font-weight: 500; color: #0A2A6E; border-top: 1px solid #E6EEFB;">${fmt(params.total)}</td>
+        </tr>
+      </table>
+      <p style="font-size: 14px; line-height: 1.6; color: #3D3D3A; margin: 20px 0 4px;">Shipping to:</p>
+      <p style="font-size: 14px; line-height: 1.5; color: #3D3D3A; margin: 0 0 20px;">
+        ${escapeHtml(params.shipping.name)}<br>
+        ${escapeHtml(params.shipping.address1)}<br>
+        ${escapeHtml(params.shipping.city)}, ${escapeHtml(params.shipping.state)} ${escapeHtml(params.shipping.zip)}<br>
+        ${escapeHtml(params.shipping.country)}
+      </p>
+      <div style="border-top: 1px solid #E6EEFB; padding-top: 16px; margin-top: 8px;">
+        <p style="font-size: 12px; color: #6B6B67; margin: 0;">Order reference: <span style="font-family: monospace;">${escapeHtml(params.reference)}</span></p>
+        <p style="font-size: 12px; color: #6B6B67; margin: 4px 0 0;">Look up this order anytime under Account on hyfydesigns.com with this reference and your email.</p>
+      </div>
+    </div>
+  `;
+
+  const res = await resend.emails.send({
+    from: emailFrom,
+    to: [params.email],
+    subject: `Order confirmed — ${params.reference}`,
+    html,
+  });
+  if (res.error) {
+    console.error("[resend] order confirmation failed:", res.error);
+  }
+}
+
+// -----------------------------------------------------------------
 // Sanity template loading + rendering
 // -----------------------------------------------------------------
 

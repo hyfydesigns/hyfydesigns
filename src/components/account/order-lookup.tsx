@@ -92,12 +92,11 @@ export function OrderLookup() {
           required
           value={reference}
           onChange={(e) => setReference(e.target.value)}
-          placeholder="cs_live_..."
+          placeholder="e.g. 9J1173062V0383925"
           className={`${fieldClass} font-mono text-xs`}
         />
         <span className="block text-xs text-ink-400 mt-1.5 leading-relaxed">
-          Starts with <code className="font-mono">cs_</code>. Find it in the
-          confirmation email or Stripe receipt you got at checkout.
+          Find it in the order confirmation email we sent you at checkout.
         </span>
       </label>
 

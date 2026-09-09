@@ -82,7 +82,31 @@ async function paypalFetch<T>(
 export type PaypalOrder = {
   id: string;
   status: string;
+  create_time?: string;
   purchase_units?: Array<{
+    amount?: {
+      currency_code: string;
+      value: string;
+      breakdown?: {
+        item_total?: { currency_code: string; value: string };
+        shipping?: { currency_code: string; value: string };
+      };
+    };
+    items?: Array<{
+      name: string;
+      quantity: string;
+      unit_amount: { currency_code: string; value: string };
+    }>;
+    shipping?: {
+      name?: { full_name?: string };
+      address?: {
+        address_line_1?: string;
+        admin_area_2?: string;
+        admin_area_1?: string;
+        postal_code?: string;
+        country_code?: string;
+      };
+    };
     payments?: {
       captures?: Array<{ id: string; status: string }>;
     };
@@ -151,5 +175,11 @@ export async function createPaypalOrder(params: {
 export async function capturePaypalOrder(orderId: string): Promise<PaypalOrder> {
   return paypalFetch<PaypalOrder>(`/v2/checkout/orders/${orderId}/capture`, {
     method: "POST",
+  });
+}
+
+export async function getPaypalOrder(orderId: string): Promise<PaypalOrder> {
+  return paypalFetch<PaypalOrder>(`/v2/checkout/orders/${orderId}`, {
+    method: "GET",
   });
 }
