@@ -25,7 +25,7 @@ export function TrustPillar({
     <div
       className={
         compact
-          ? "inline-flex items-center gap-1.5 text-[11px] whitespace-nowrap px-3 py-1.5 rounded-full bg-white/6 flex-shrink-0"
+          ? "inline-flex items-center gap-1.5 text-[11px] whitespace-nowrap px-3 py-1.5 rounded-full bg-ink/8 flex-shrink-0"
           : "flex items-center gap-2.5 text-xs sm:text-sm"
       }
     >

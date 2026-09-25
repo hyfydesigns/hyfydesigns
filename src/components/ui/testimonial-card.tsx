@@ -49,7 +49,7 @@ export function TestimonialCard({
         <span
           className={cn(
             "h-8 w-8 rounded-full inline-flex items-center justify-center font-medium text-xs",
-            variant === "solid" ? "bg-red text-cream" : "bg-red-tint text-red-deep",
+            variant === "solid" ? "bg-red text-cream" : "bg-red-tint text-red",
           )}
         >
           {testimonial.initials}

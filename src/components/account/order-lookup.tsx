@@ -101,7 +101,7 @@ export function OrderLookup() {
       </label>
 
       {error && (
-        <div className="bg-red-tint text-red-deep p-3 rounded-lg text-sm">
+        <div className="bg-red-tint text-red p-3 rounded-lg text-sm">
           {error}
         </div>
       )}

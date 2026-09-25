@@ -4,7 +4,7 @@ import { site } from "@/lib/site";
 
 export function TrustBar() {
   return (
-    <section className="bg-navy text-cream">
+    <section className="bg-cream-warm text-ink border-y border-hairline">
       <Container>
         <div className="hidden sm:grid grid-cols-4 gap-6 py-4">
           {site.trust.map((t) => (

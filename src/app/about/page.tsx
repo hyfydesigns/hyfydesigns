@@ -31,18 +31,18 @@ export default function AboutPage() {
     <>
       <NavBar />
       <main className="flex-1">
-        <section className="py-12 sm:py-20 bg-navy text-cream relative overflow-hidden">
-          <div className="absolute -right-24 -top-24 h-96 w-96 rounded-full bg-blue opacity-40" />
-          <div className="absolute right-1/3 bottom-0 h-72 w-72 rounded-full bg-red opacity-30" />
+        <section className="py-12 sm:py-20 relative overflow-hidden">
+          <div className="absolute -right-24 -top-24 h-96 w-96 rounded-full bg-blue opacity-30 blur-2xl" />
+          <div className="absolute right-1/3 bottom-0 h-72 w-72 rounded-full bg-red opacity-20 blur-2xl" />
           <Container className="relative">
             <div className="max-w-3xl">
-              <Eyebrow className="bg-cream/10 text-cream">Our story</Eyebrow>
-              <h1 className="mt-4 text-4xl sm:text-5xl lg:text-6xl leading-[1.05] text-cream">
+              <Eyebrow className="bg-navy/10 text-navy">Our story</Eyebrow>
+              <h1 className="mt-4 text-4xl sm:text-5xl lg:text-6xl leading-[1.05] text-ink">
                 Twenty years of ink,
                 <br />
                 one Houston studio.
               </h1>
-              <p className="mt-5 text-cream/80 text-base sm:text-lg max-w-2xl leading-relaxed">
+              <p className="mt-5 text-ink/80 text-base sm:text-lg max-w-2xl leading-relaxed">
                 HyFy Designs opened over two decades ago as a small screen
                 print shop in Houston&apos;s Third Ward. Today we&apos;re
                 still hands-on, still Houston-based, and still print every
@@ -125,7 +125,7 @@ export default function AboutPage() {
                   key={v.title}
                   className="p-6 rounded-2xl bg-white border border-hairline"
                 >
-                  <div className="h-11 w-11 rounded-lg bg-red-tint text-red-deep inline-flex items-center justify-center">
+                  <div className="h-11 w-11 rounded-lg bg-red-tint text-red inline-flex items-center justify-center">
                     <v.icon className="h-5 w-5" strokeWidth={1.75} />
                   </div>
                   <h3 className="mt-4 text-lg">{v.title}</h3>

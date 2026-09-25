@@ -19,7 +19,7 @@ export type Product = {
 };
 
 const bgClass: Record<Product["visual"]["bg"], string> = {
-  "red-tint": "bg-red-tint text-red-deep",
+  "red-tint": "bg-red-tint text-red",
   "blue-tint": "bg-blue-tint text-blue",
   navy: "bg-navy text-red",
   cream: "bg-cream text-navy border border-dashed border-navy/20",

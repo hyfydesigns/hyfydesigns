@@ -38,7 +38,7 @@ const steps = [
 ];
 
 const fallbackPortfolio: Omit<PortfolioProjectDoc, "_id" | "image">[] = [
-  { title: "Blacksmith Coffee tees", meta: "80 shirts · Heights, TX", tone: "bg-red-tint text-red-deep" },
+  { title: "Blacksmith Coffee tees", meta: "80 shirts · Heights, TX", tone: "bg-red-tint text-red" },
   { title: "TX Marathon merch", meta: "500 pieces · Downtown", tone: "bg-blue text-cream" },
   { title: "Wedding welcome mugs", meta: "60 mugs · East End", tone: "bg-blue-tint text-blue" },
   { title: "Startup swag pack", meta: "150 kits · Midtown", tone: "bg-navy text-cream" },

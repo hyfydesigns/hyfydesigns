@@ -51,7 +51,7 @@ export default async function UnsubscribePage({
               </>
             ) : (
               <>
-                <div className="mx-auto h-14 w-14 rounded-full bg-red-tint text-red-deep inline-flex items-center justify-center mb-6">
+                <div className="mx-auto h-14 w-14 rounded-full bg-red-tint text-red inline-flex items-center justify-center mb-6">
                   <AlertTriangle className="h-7 w-7" strokeWidth={2.5} />
                 </div>
                 <h1 className="text-3xl sm:text-4xl">

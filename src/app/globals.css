@@ -1,27 +1,48 @@
 @import "tailwindcss";
 
+/*
+ * Neon urban/glitch redesign (2026-09). Token NAMES are kept from the
+ * original light "editorial print house" palette (navy/blue/red/cream/
+ * white/ink) so the ~500 existing className references across the site
+ * don't need a mechanical rename — only the VALUES change. Read each
+ * token by its role comment below, not its literal name.
+ *
+ * New role mapping, chosen as an RGB-glitch-adjacent triad (cyan +
+ * magenta + red — literally the channel-split look of glitch art):
+ *   navy  (was primary text/dark buttons)      -> electric cyan
+ *   blue  (was accent/links/tints)              -> electric magenta
+ *   red   (was highlight/badges/error states)   -> neon red — kept red
+ *         on purpose: it's genuinely dual-role (brand highlight AND
+ *         error/danger states throughout checkout/forms), so it has to
+ *         stay recognizably red rather than become a third hue.
+ *   cream/white (was light backgrounds)         -> near-black surfaces
+ *   ink   (was dark text)                       -> light/white text
+ */
 @theme {
-  --color-navy: #0A2A6E;
-  --color-navy-deep: #061C4A;
-  --color-blue: #1E4FD9;
-  --color-blue-light: #8FB4F5;
-  --color-blue-tint: #E6EEFB;
-  --color-red: #E02D2D;
-  --color-red-deep: #A31E1E;
-  --color-red-tint: #FBE1E1;
-  --color-cream: #FDFBF5;
-  --color-cream-warm: #F7F2E4;
-  --color-white: #FFFFFF;
-  --color-ink: #0A0A0A;
-  --color-ink-600: #3D3D3A;
-  --color-ink-400: #6B6B67;
-  --color-ink-200: #B4B2A9;
-  --color-hairline: rgba(10, 42, 110, 0.10);
-  --color-hairline-strong: rgba(10, 42, 110, 0.20);
+  --color-navy: #22E5FF;
+  --color-navy-deep: #00AEC4;
+  --color-blue: #FF2E9A;
+  --color-blue-light: #FF7FC7;
+  --color-blue-tint: #2A0F22;
+  --color-red: #FF3B5C;
+  --color-red-deep: #D91F45;
+  --color-red-tint: #2A0A12;
+  --color-cream: #08080D;
+  --color-cream-warm: #151521;
+  --color-white: #1F1F33;
+  --color-ink: #F5F5FA;
+  --color-ink-600: #B8B8C8;
+  --color-ink-400: #82829A;
+  --color-ink-200: #3A3A4E;
+  --color-hairline: rgba(34, 229, 255, 0.14);
+  --color-hairline-strong: rgba(34, 229, 255, 0.28);
 
   --font-display: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-voice: var(--font-fraunces), ui-serif, Georgia, serif;
+  /* Was Fraunces (editorial serif) — aliased to the mono face instead of
+     loading a new font, since a terminal/mono voice reads "digital/
+     glitch" and the Fraunces import elsewhere is now unused. */
+  --font-voice: var(--font-jetbrains-mono), ui-monospace, monospace;
   --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
 
   --radius-sm: 6px;
@@ -33,12 +54,12 @@
   --spacing-section: 4rem;
   --spacing-section-lg: 6rem;
 
-  --shadow-card: 0 1px 2px rgba(10, 42, 110, 0.04);
-  --shadow-lift: 0 8px 24px rgba(10, 42, 110, 0.08);
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-lift: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 24px rgba(34, 229, 255, 0.10);
 }
 
 :root {
-  color-scheme: light;
+  color-scheme: dark;
 }
 
 html, body {
@@ -72,6 +93,7 @@ h1, h2, h3, h4, h5, h6 {
   outline: 2px solid var(--color-blue);
   outline-offset: 2px;
   border-radius: 4px;
+  box-shadow: 0 0 0 4px rgba(255, 46, 154, 0.25);
 }
 
 button, [role="button"], a {
@@ -93,6 +115,26 @@ button, [role="button"], a {
 
 @utility font-voice {
   font-family: var(--font-voice);
+}
+
+/* Neon glow utilities — layer onto buttons/cards for the signage feel.
+   Kept as opt-in utilities rather than baked into every component so
+   the effect stays for real emphasis (hero CTAs, active states) instead
+   of glowing everywhere at once. */
+@utility glow-cyan {
+  box-shadow: 0 0 16px 2px rgba(34, 229, 255, 0.35), 0 0 40px rgba(34, 229, 255, 0.15);
+}
+@utility glow-magenta {
+  box-shadow: 0 0 16px 2px rgba(255, 46, 154, 0.35), 0 0 40px rgba(255, 46, 154, 0.15);
+}
+@utility glow-red {
+  box-shadow: 0 0 16px 2px rgba(255, 59, 92, 0.35), 0 0 40px rgba(255, 59, 92, 0.15);
+}
+@utility text-glow-cyan {
+  text-shadow: 0 0 20px rgba(34, 229, 255, 0.5);
+}
+@utility text-glow-magenta {
+  text-shadow: 0 0 20px rgba(255, 46, 154, 0.5);
 }
 
 .product-html { overflow-wrap: break-word; word-break: break-word; }
@@ -156,12 +198,12 @@ button, [role="button"], a {
 .scroll-pane {
   overflow-x: hidden;
   scrollbar-width: thin;
-  scrollbar-color: rgba(10, 42, 110, 0.25) transparent;
+  scrollbar-color: rgba(34, 229, 255, 0.3) transparent;
   mask-image: linear-gradient(to bottom, black calc(100% - 16px), transparent);
   -webkit-mask-image: linear-gradient(to bottom, black calc(100% - 16px), transparent);
 }
 .scroll-pane::-webkit-scrollbar { width: 6px; }
 .scroll-pane::-webkit-scrollbar-thumb {
-  background: rgba(10, 42, 110, 0.25);
+  background: rgba(34, 229, 255, 0.3);
   border-radius: 3px;
 }

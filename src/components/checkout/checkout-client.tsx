@@ -485,7 +485,7 @@ export function CheckoutClient() {
             </div>
 
             {!paypalClientId && (
-              <p className="text-sm text-red-deep">
+              <p className="text-sm text-red">
                 Payment form is temporarily unavailable. Please contact us to
                 place your order.
               </p>
@@ -511,7 +511,7 @@ export function CheckoutClient() {
         )}
 
         {error && (
-          <div className="bg-red-tint text-red-deep p-4 rounded-xl text-sm">
+          <div className="bg-red-tint text-red p-4 rounded-xl text-sm">
             {error}
           </div>
         )}

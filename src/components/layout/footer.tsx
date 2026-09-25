@@ -56,7 +56,7 @@ const groups = [
 
 export function Footer() {
   return (
-    <footer className="mt-16 sm:mt-24 bg-navy text-cream">
+    <footer className="mt-16 sm:mt-24 bg-cream-warm text-ink border-t border-hairline">
       <Container>
         <div className="py-12 sm:py-16 grid gap-10 sm:grid-cols-2 lg:grid-cols-5">
           <div className="lg:col-span-2">
@@ -67,11 +67,11 @@ export function Footer() {
               height={400}
               className="h-14 w-auto"
             />
-            <p className="mt-3 text-sm text-cream/75 leading-relaxed max-w-sm">
+            <p className="mt-3 text-sm text-ink/75 leading-relaxed max-w-sm">
               {site.tagline}
             </p>
             <div className="mt-6 max-w-sm">
-              <p className="block text-xs uppercase tracking-wider text-cream/60 mb-2">
+              <p className="block text-xs uppercase tracking-wider text-ink/60 mb-2">
                 New drops in your inbox
               </p>
               <NewsletterForm tone="dark" ctaLabel="Join" />
@@ -80,7 +80,7 @@ export function Footer() {
 
           {groups.map((group) => (
             <div key={group.title}>
-              <h4 className="text-cream text-sm font-medium mb-4">
+              <h4 className="text-navy text-sm font-medium mb-4">
                 {group.title}
               </h4>
               <ul className="space-y-2.5">
@@ -88,7 +88,7 @@ export function Footer() {
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="text-sm text-cream/70 hover:text-cream transition-colors tap"
+                      className="text-sm text-ink/70 hover:text-navy transition-colors tap"
                     >
                       {link.label}
                     </Link>
@@ -99,7 +99,7 @@ export function Footer() {
           ))}
         </div>
 
-        <div className="border-t border-cream/10 py-6 flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between text-xs text-cream/60">
+        <div className="border-t border-ink/10 py-6 flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between text-xs text-ink/60">
           <div className="flex flex-wrap gap-x-5 gap-y-2">
             <span className="inline-flex items-center gap-1.5">
               <MapPin className="h-3.5 w-3.5" strokeWidth={2} />
@@ -118,7 +118,7 @@ export function Footer() {
             <a
               href={site.social.instagram}
               aria-label="Instagram"
-              className="h-8 w-8 inline-flex items-center justify-center rounded-full hover:bg-cream/10 tap"
+              className="h-8 w-8 inline-flex items-center justify-center rounded-full hover:bg-ink/10 hover:text-navy tap"
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -127,7 +127,7 @@ export function Footer() {
             <a
               href={site.social.facebook}
               aria-label="Facebook"
-              className="h-8 w-8 inline-flex items-center justify-center rounded-full hover:bg-cream/10 tap"
+              className="h-8 w-8 inline-flex items-center justify-center rounded-full hover:bg-ink/10 hover:text-navy tap"
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -137,14 +137,14 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-cream/10 py-4 flex flex-wrap gap-x-5 gap-y-2 text-xs text-cream/50">
-          <Link href="/privacy" className="hover:text-cream tap">
+        <div className="border-t border-ink/10 py-4 flex flex-wrap gap-x-5 gap-y-2 text-xs text-ink/50">
+          <Link href="/privacy" className="hover:text-navy tap">
             Privacy Policy
           </Link>
-          <Link href="/terms" className="hover:text-cream tap">
+          <Link href="/terms" className="hover:text-navy tap">
             Terms of Service
           </Link>
-          <Link href="/returns" className="hover:text-cream tap">
+          <Link href="/returns" className="hover:text-navy tap">
             Return policy
           </Link>
         </div>

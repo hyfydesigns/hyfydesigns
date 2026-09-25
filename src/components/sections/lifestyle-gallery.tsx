@@ -8,7 +8,7 @@ import type { LifestylePhotoDoc } from "@/sanity/types";
 
 const fallbackTiles = [
   { location: "Buffalo Bayou", aspect: "aspect-[4/5]", tone: "bg-blue text-cream" },
-  { location: "Montrose", aspect: "aspect-[4/3]", tone: "bg-red-tint text-red-deep" },
+  { location: "Montrose", aspect: "aspect-[4/3]", tone: "bg-red-tint text-red" },
   { location: "Discovery Green", aspect: "aspect-square", tone: "bg-navy text-cream" },
   { location: "The Heights", aspect: "aspect-[4/3]", tone: "bg-blue-tint text-navy" },
   { location: "East End", aspect: "aspect-[4/5]", tone: "bg-red text-cream" },

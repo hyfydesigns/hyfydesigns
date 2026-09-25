@@ -61,7 +61,7 @@ export default function AccountPage() {
                 </div>
 
                 <div className="bg-white border border-hairline rounded-2xl p-5 sm:p-6">
-                  <div className="h-9 w-9 rounded-lg bg-red-tint text-red-deep inline-flex items-center justify-center mb-3">
+                  <div className="h-9 w-9 rounded-lg bg-red-tint text-red inline-flex items-center justify-center mb-3">
                     <MessageCircle className="h-4 w-4" strokeWidth={2} />
                   </div>
                   <h3 className="text-base font-medium text-navy">

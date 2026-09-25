@@ -101,13 +101,13 @@ export default async function ReturnsPage() {
               ))}
             </div>
 
-            <div className="bg-navy rounded-2xl p-6 sm:p-8 text-cream">
-              <h2 className="text-xl sm:text-2xl mb-3">
+            <div className="bg-white border border-hairline-strong rounded-2xl p-6 sm:p-8 text-ink">
+              <h2 className="text-xl sm:text-2xl mb-3 text-ink">
                 How to request a replacement
               </h2>
               <ol className="space-y-3 text-sm sm:text-base leading-relaxed">
                 <li className="flex gap-3">
-                  <span className="h-6 w-6 rounded-full bg-cream/15 text-cream text-xs font-medium inline-flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="h-6 w-6 rounded-full bg-navy text-cream text-xs font-medium inline-flex items-center justify-center flex-shrink-0 mt-0.5">
                     1
                   </span>
                   <span>
@@ -119,13 +119,13 @@ export default async function ReturnsPage() {
                   </span>
                 </li>
                 <li className="flex gap-3">
-                  <span className="h-6 w-6 rounded-full bg-cream/15 text-cream text-xs font-medium inline-flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="h-6 w-6 rounded-full bg-navy text-cream text-xs font-medium inline-flex items-center justify-center flex-shrink-0 mt-0.5">
                     2
                   </span>
                   <span>Include your order number and a photo of the issue.</span>
                 </li>
                 <li className="flex gap-3">
-                  <span className="h-6 w-6 rounded-full bg-cream/15 text-cream text-xs font-medium inline-flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="h-6 w-6 rounded-full bg-navy text-cream text-xs font-medium inline-flex items-center justify-center flex-shrink-0 mt-0.5">
                     3
                   </span>
                   <span>
@@ -134,7 +134,7 @@ export default async function ReturnsPage() {
                   </span>
                 </li>
               </ol>
-              <div className="mt-5 pt-5 border-t border-cream/15 flex items-center gap-2 text-sm text-cream/80">
+              <div className="mt-5 pt-5 border-t border-hairline flex items-center gap-2 text-sm text-ink/80">
                 <Check className="h-4 w-4 flex-shrink-0" strokeWidth={2} />
                 Replacements ship at no extra cost to you.
               </div>

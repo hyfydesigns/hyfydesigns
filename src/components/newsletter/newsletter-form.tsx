@@ -20,14 +20,14 @@ const styles: Record<
     button:
       "min-h-11 px-6 rounded-lg bg-navy text-cream text-sm font-medium hover:bg-navy-deep tap disabled:opacity-50",
     success: "text-navy",
-    error: "text-red-deep",
+    error: "text-red",
   },
   dark: {
     input:
-      "flex-1 min-h-11 rounded-lg bg-cream/10 border border-cream/20 text-cream placeholder:text-cream/50 px-4 text-sm focus:outline-none focus:border-red",
+      "flex-1 min-h-11 rounded-lg bg-ink/5 border border-ink/15 text-ink placeholder:text-ink-400 px-4 text-sm focus:outline-none focus:border-red",
     button:
       "min-h-11 px-6 rounded-lg bg-red text-cream text-sm font-medium hover:bg-red-deep tap disabled:opacity-50",
-    success: "text-cream",
+    success: "text-ink",
     error: "text-red",
   },
 };

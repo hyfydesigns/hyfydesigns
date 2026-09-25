@@ -97,7 +97,7 @@ export async function Hero() {
               </div>
               <ShirtGraphic />
               <div className="absolute bottom-4 left-4 flex gap-1.5">
-                {["#0A2A6E", "#E02D2D", "#FDFBF5", "#8FB4F5"].map((c) => (
+                {["#22E5FF", "#FF3B5C", "#0A0A12", "#FF7FC7"].map((c) => (
                   <span
                     key={c}
                     className="h-4 w-4 rounded-full border-2 border-white/70"

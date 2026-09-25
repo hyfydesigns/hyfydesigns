@@ -5,11 +5,11 @@ export function NewsletterInline() {
   return (
     <section className="py-12 sm:py-16">
       <Container size="narrow">
-        <div className="bg-navy rounded-2xl p-6 sm:p-10 text-center">
-          <h2 className="text-cream text-2xl sm:text-3xl">
+        <div className="bg-white border border-hairline-strong glow-magenta rounded-2xl p-6 sm:p-10 text-center">
+          <h2 className="text-navy text-2xl sm:text-3xl">
             Drops land first Friday of every month.
           </h2>
-          <p className="mt-2 text-cream/70 text-sm sm:text-base max-w-md mx-auto">
+          <p className="mt-2 text-ink/70 text-sm sm:text-base max-w-md mx-auto">
             One email. New tees, studio picks, and fresh design inspiration
             from the HyFy studio.
           </p>

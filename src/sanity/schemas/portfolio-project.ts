@@ -25,7 +25,7 @@ export const portfolioProject = defineType({
       description: "Background tone when photo is absent",
       options: {
         list: [
-          { title: "Red tint", value: "bg-red-tint text-red-deep" },
+          { title: "Red tint", value: "bg-red-tint text-red" },
           { title: "Blue", value: "bg-blue text-cream" },
           { title: "Blue tint", value: "bg-blue-tint text-blue" },
           { title: "Navy", value: "bg-navy text-cream" },
