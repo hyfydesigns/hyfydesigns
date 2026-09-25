@@ -40,8 +40,9 @@ export async function Hero() {
     : defaults.secondaryCta;
 
   return (
-    <section className="relative">
-      <Container>
+    <section className="relative overflow-hidden">
+      <HeroBackground />
+      <Container className="relative">
         <div className="grid gap-8 lg:grid-cols-[1.15fr_1fr] lg:gap-12 items-center py-10 sm:py-16 lg:py-20">
           <div className="order-1">
             <Eyebrow>
@@ -162,6 +163,108 @@ function parseInlineMarks(line: string, keyPrefix: string): React.ReactNode[] {
     parts.push(line.slice(lastIndex));
   }
   return parts;
+}
+
+// Deterministic skyline layout (x/width/height in a 1440x300 viewBox) —
+// hand-tuned rather than random so the render is stable across requests
+// and doesn't need a client component just to seed randomness safely.
+const SKYLINE_BUILDINGS = [
+  { x: 0, w: 70, h: 120 },
+  { x: 65, w: 45, h: 190 },
+  { x: 105, w: 60, h: 90 },
+  { x: 160, w: 50, h: 230 },
+  { x: 205, w: 80, h: 140 },
+  { x: 280, w: 40, h: 260 },
+  { x: 315, w: 65, h: 110 },
+  { x: 375, w: 55, h: 200 },
+  { x: 425, w: 90, h: 160 },
+  { x: 510, w: 45, h: 240 },
+  { x: 550, w: 70, h: 100 },
+  { x: 615, w: 50, h: 210 },
+  { x: 660, w: 85, h: 150 },
+  { x: 740, w: 40, h: 270 },
+  { x: 775, w: 65, h: 120 },
+  { x: 835, w: 55, h: 190 },
+  { x: 885, w: 75, h: 140 },
+  { x: 955, w: 45, h: 230 },
+  { x: 995, w: 60, h: 100 },
+  { x: 1050, w: 80, h: 200 },
+  { x: 1125, w: 50, h: 150 },
+  { x: 1170, w: 65, h: 240 },
+  { x: 1230, w: 55, h: 110 },
+  { x: 1280, w: 70, h: 180 },
+  { x: 1345, w: 95, h: 130 },
+] as const;
+
+const WINDOW_COLORS = ["#22E5FF", "#FF2E9A", "#FF3B5C"] as const;
+const SKYLINE_VIEW_HEIGHT = 300;
+
+// A code-generated night-city backdrop standing in for a background photo:
+// a skyline silhouette with lit windows, blurred neon glow orbs, faint
+// scanlines, and SVG film grain. No external image asset, so no licensing
+// question — and it reads as photographic at a glance rather than as a
+// flat illustration, which a gradient alone doesn't achieve. A scrim on
+// top keeps the headline legible regardless of where the art is busiest.
+function HeroBackground() {
+  return (
+    <div className="absolute inset-0" aria-hidden="true">
+      <div className="absolute -left-24 -top-16 h-80 w-80 rounded-full bg-navy opacity-25 blur-[110px]" />
+      <div className="absolute right-0 top-1/4 h-96 w-96 rounded-full bg-blue opacity-20 blur-[110px]" />
+      <div className="absolute left-1/3 bottom-0 h-72 w-72 rounded-full bg-red opacity-15 blur-[110px]" />
+
+      <svg
+        className="absolute inset-x-0 bottom-0 w-full h-[45%] sm:h-[55%]"
+        viewBox={`0 0 1440 ${SKYLINE_VIEW_HEIGHT}`}
+        preserveAspectRatio="xMidYMax slice"
+      >
+        {SKYLINE_BUILDINGS.map((b, i) => {
+          const y = SKYLINE_VIEW_HEIGHT - b.h;
+          const cols = Math.max(1, Math.floor(b.w / 14));
+          const rows = Math.max(1, Math.floor(b.h / 18));
+          const windows: React.ReactNode[] = [];
+          for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < cols; c++) {
+              if ((i * 3 + r * 5 + c * 2) % 4 !== 0) continue;
+              windows.push(
+                <rect
+                  key={`${r}-${c}`}
+                  x={b.x + 5 + c * 14}
+                  y={y + 8 + r * 18}
+                  width={4}
+                  height={6}
+                  fill={WINDOW_COLORS[(i + r + c) % WINDOW_COLORS.length]}
+                  opacity={0.55}
+                />,
+              );
+            }
+          }
+          return (
+            <g key={i}>
+              <rect x={b.x} y={y} width={b.w} height={b.h} fill="#0D0D18" />
+              {windows}
+            </g>
+          );
+        })}
+      </svg>
+
+      <div
+        className="absolute inset-0 opacity-[0.05]"
+        style={{
+          backgroundImage:
+            "repeating-linear-gradient(to bottom, rgba(255,255,255,0.6) 0px, rgba(255,255,255,0.6) 1px, transparent 1px, transparent 3px)",
+        }}
+      />
+
+      <svg className="absolute inset-0 w-full h-full opacity-[0.04] mix-blend-overlay">
+        <filter id="hero-grain">
+          <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves={2} stitchTiles="stitch" />
+        </filter>
+        <rect width="100%" height="100%" filter="url(#hero-grain)" />
+      </svg>
+
+      <div className="absolute inset-0 bg-cream/60" />
+    </div>
+  );
 }
 
 function ShirtGraphic() {
