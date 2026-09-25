@@ -27,6 +27,9 @@ export default defineConfig({
               .title("Home hero")
               .child(S.document().schemaType("homeHero").documentId("homeHero")),
             S.documentTypeListItem("heroSlide").title("Hero slides"),
+            S.documentTypeListItem("heroBackground").title(
+              "Hero background photos",
+            ),
             S.listItem()
               .title("Contact page")
               .child(

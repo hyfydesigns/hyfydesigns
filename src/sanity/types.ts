@@ -27,6 +27,11 @@ export type HeroSlideDoc = {
   image: SanityImage;
 };
 
+export type HeroBackgroundDoc = {
+  _id: string;
+  image: SanityImage;
+};
+
 export type ContactPageDoc = {
   eyebrow?: string;
   headline?: string;

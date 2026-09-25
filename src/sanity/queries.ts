@@ -18,6 +18,12 @@ export const HERO_SLIDES_QUERY = groq`
   }
 `;
 
+export const HERO_BACKGROUNDS_QUERY = groq`
+  *[_type == "heroBackground" && active == true] | order(order asc){
+    _id, image
+  }
+`;
+
 export const CONTACT_PAGE_QUERY = groq`
   *[_type == "contactPage"][0]{
     eyebrow, headline, intro, formHeading,

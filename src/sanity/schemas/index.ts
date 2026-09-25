@@ -1,6 +1,7 @@
 import type { SchemaTypeDefinition } from "sanity";
 import { homeHero } from "./home-hero";
 import { heroSlide } from "./hero-slide";
+import { heroBackground } from "./hero-background";
 import { contactPage } from "./contact-page";
 import { seoSettings } from "./seo-settings";
 import { emailTemplate } from "./email-template";
@@ -14,6 +15,7 @@ import { productContent } from "./product-content";
 export const schemaTypes: SchemaTypeDefinition[] = [
   homeHero,
   heroSlide,
+  heroBackground,
   contactPage,
   seoSettings,
   emailSettings,

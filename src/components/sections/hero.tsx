@@ -1,12 +1,25 @@
-import Image from "next/image";
 import { MapPin, ArrowRight, Star } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { ButtonLink } from "@/components/ui/button";
 import { Eyebrow } from "@/components/ui/badge";
 import { sanityFetch } from "@/sanity/client";
-import { HOME_HERO_QUERY, HERO_SLIDES_QUERY } from "@/sanity/queries";
-import type { HomeHeroDoc, HeroSlideDoc } from "@/sanity/types";
+import { urlFor } from "@/sanity/image";
+import {
+  HOME_HERO_QUERY,
+  HERO_SLIDES_QUERY,
+  HERO_BACKGROUNDS_QUERY,
+} from "@/sanity/queries";
+import type {
+  HomeHeroDoc,
+  HeroSlideDoc,
+  HeroBackgroundDoc,
+} from "@/sanity/types";
 import { HeroCarousel } from "./hero-carousel";
+import { HeroBackground } from "./hero-background";
+
+// Shown when nothing's been uploaded to Hero background photos in Sanity
+// Studio yet — keeps the hero looking finished out of the box.
+const FALLBACK_BACKGROUND = "/hero-print-studio.jpg";
 
 type CtaCopy = { label: string; href: string };
 
@@ -23,10 +36,18 @@ const defaults: {
 };
 
 export async function Hero() {
-  const [doc, slides] = await Promise.all([
+  const [doc, slides, backgrounds] = await Promise.all([
     sanityFetch<HomeHeroDoc | null>(HOME_HERO_QUERY, {}, null),
     sanityFetch<HeroSlideDoc[]>(HERO_SLIDES_QUERY, {}, []),
+    sanityFetch<HeroBackgroundDoc[]>(HERO_BACKGROUNDS_QUERY, {}, []),
   ]);
+
+  const backgroundImages =
+    backgrounds.length > 0
+      ? backgrounds.map((b) =>
+          urlFor(b.image).width(1600).height(1000).fit("crop").url(),
+        )
+      : [FALLBACK_BACKGROUND];
 
   const eyebrow = doc?.eyebrow ?? defaults.eyebrow;
   const sub = doc?.sub ?? defaults.sub;
@@ -42,7 +63,7 @@ export async function Hero() {
 
   return (
     <section className="relative overflow-hidden">
-      <HeroBackground />
+      <HeroBackground images={backgroundImages} />
       <Container className="relative">
         <div className="grid gap-8 lg:grid-cols-[1.15fr_1fr] lg:gap-12 items-center py-10 sm:py-16 lg:py-20">
           <div className="order-1">
@@ -164,26 +185,6 @@ function parseInlineMarks(line: string, keyPrefix: string): React.ReactNode[] {
     parts.push(line.slice(lastIndex));
   }
   return parts;
-}
-
-// AI-generated photo (screen-printing studio at night, neon ink under
-// press lights) replacing the earlier code-generated skyline — the
-// client didn't like the illustrated look. A scrim on top keeps the
-// headline legible over the photo regardless of viewport.
-function HeroBackground() {
-  return (
-    <div className="absolute inset-0" aria-hidden="true">
-      <Image
-        src="/hero-print-studio.jpg"
-        alt=""
-        fill
-        priority
-        sizes="100vw"
-        className="object-cover"
-      />
-      <div className="absolute inset-0 bg-cream/60" />
-    </div>
-  );
 }
 
 function ShirtGraphic() {
