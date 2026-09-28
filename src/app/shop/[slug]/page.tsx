@@ -26,6 +26,14 @@ export async function generateStaticParams() {
   return products.map((p) => ({ slug: p.slug }));
 }
 
+// Without this, a product page is a pure build-time snapshot — deleting
+// the product in Printful wouldn't 404 this page until the next deploy,
+// since generateStaticParams only runs at build time, not on a schedule.
+// This lets Next.js re-check on a visit after the window and call
+// notFound() below once getProduct() genuinely comes back empty. Matches
+// the 5-minute window already used for Printful data elsewhere.
+export const revalidate = 300;
+
 export async function generateMetadata({
   params,
 }: {

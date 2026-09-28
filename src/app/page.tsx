@@ -10,6 +10,13 @@ import { LifestyleGallery } from "@/components/sections/lifestyle-gallery";
 import { NewsletterInline } from "@/components/sections/newsletter-inline";
 import { StickyMobileCTA } from "@/components/sections/sticky-mobile-cta";
 
+// Without this, the homepage is a pure build-time snapshot with no
+// revalidation at all — Featured merch / Best sellers would keep showing
+// products deleted from Printful indefinitely, until the next deploy.
+// Matches the 5-minute window already used for Printful data elsewhere
+// (src/lib/printful.ts's fetch, and /api/products/list).
+export const revalidate = 300;
+
 export default function HomePage() {
   return (
     <>

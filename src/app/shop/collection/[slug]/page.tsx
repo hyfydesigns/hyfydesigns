@@ -26,6 +26,11 @@ export async function generateStaticParams() {
 
 export const dynamicParams = true;
 
+// Same reasoning as src/app/page.tsx and shop/[slug]/page.tsx — without
+// this, a collection's product listing is a build-time snapshot and would
+// keep showing products deleted from Printful until the next deploy.
+export const revalidate = 300;
+
 export async function generateMetadata({
   params,
 }: {
