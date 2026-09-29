@@ -76,6 +76,10 @@ const map: Record<string, string> = {
   darkorange: "#C24512",
   rust: "#A6461E",
   autumn: "#B0522A",
+  // Sampled directly from the Hex Appeal Premium Sweatshirt's own Adobe
+  // mockup photo (was falling back to the generic neutral-gray swatch —
+  // this color name just wasn't in the map at all).
+  adobe: "#CC7637",
   gold: "#E3B02F",
   yellow: "#F0D42B",
   daisy: "#FFDD3D",
