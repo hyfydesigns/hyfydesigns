@@ -48,6 +48,15 @@ type PfStoreProductDetail = {
     variant_id: number;
     retail_price: string;
     name: string;
+    // Printful's own reliable, structured fields — prefer these over
+    // parsing color/size out of `name`. That string is normally
+    // "Product Name / Color / Size" but Printful omits the color segment
+    // entirely for some products (seen in the wild as "Product Name /
+    // Size"), which silently mismapped a whole color's swatch and label
+    // to the product's own name. See extractColor/extractSize below for
+    // the fallback kept for the rare case these come back empty.
+    size?: string;
+    color?: string;
     product: {
       variant_id: number;
       product_id: number;
@@ -241,9 +250,6 @@ function mapDetail(
 ): PrintfulProduct {
   const name = d.sync_product.name;
   const slug = slugify(name) || d.sync_product.external_id;
-  const colors = Array.from(
-    new Set(d.sync_variants.map((v) => extractColor(v.name))),
-  ).filter(Boolean);
   const type = detectType(name);
   const category = categoryFor(type);
   const priceNum = Number(d.sync_variants[0]?.retail_price ?? "0");
@@ -252,13 +258,17 @@ function mapDetail(
   const variants = d.sync_variants.map((v) => ({
     id: String(v.id),
     catalogVariantId: v.variant_id,
-    color: extractColor(v.name),
-    size: extractSize(v.name),
+    color: v.color?.trim() || extractColor(v.name),
+    size: v.size?.trim() || extractSize(v.name),
     price: Number(v.retail_price),
     mockupUrl:
       v.files?.find((f) => f.type === "preview")?.preview_url ??
       v.product.image,
   }));
+
+  const colors = Array.from(new Set(variants.map((v) => v.color))).filter(
+    Boolean,
+  );
 
   // Collect unique mockup URLs: main thumbnail first, then one per unique color
   const seen = new Set<string>();
